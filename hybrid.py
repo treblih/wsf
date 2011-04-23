@@ -8,14 +8,16 @@ import os
 
 #import getpass
 # getpass.getuser() -> user name
+autorun = True
+cores = os.sysconf("SC_NPROCESSORS_CONF")
+cores_use = cores
+home = "/home/" + os.environ["USER"] + "/"
+path_conf = home + ".hybrid"
+path_swan = home + "swan"
+path_fvcom = home + "fvcom"
  
 class win_main(object):        
     def __init__(self):
-        self.user = os.environ["USER"]
-        self.autorun = True
-        self.cores = os.sysconf("SC_NPROCESSORS_CONF")
-        self.path_swan = "/home/" + self.user + "/swan"
-        self.path_fvcom = "/home/" + self.user + "/fvcom"
         #self.builder = gtk.Builder()
         #self.builder.add_from_file("hybrid2.xml")
         self.glade = gtk.glade.XML("hybrid2.glade")
@@ -44,10 +46,11 @@ class win_main(object):
         ent_fvcom = glade.get_widget("ent_fvcom")
         cancel = glade.get_widget("but_set_cancel")
         ok = glade.get_widget("but_set_ok")
-        chk_autorun.set_active(True)
-        spn_core.set_value(self.cores)
-        ent_swan.set_text(self.path_swan)
-        ent_fvcom.set_text(self.path_fvcom)
+        global autorun, cores, path_swan, path_fvcom
+        chk_autorun.set_active(autorun)
+        spn_core.set_value(cores)
+        ent_swan.set_text(path_swan)
+        ent_fvcom.set_text(path_fvcom)
         ok.connect("clicked", self.settings_ok, 
                    chk_autorun, spn_core, ent_swan, ent_fvcom)
         about.run()
@@ -70,9 +73,17 @@ class win_main(object):
         #about.destroy()
     
     def settings_ok(self, widget, chk_autorun, spn_core, ent_swan, ent_fvcom):
-        self.autorun = chk_autorun.get_active()
-        self.cores = spn_core.get_value_as_int()
-        # if core < 0 || > 4
+        global autorun, cores, cores_use
+        autorun = chk_autorun.get_active()
+        cores_use = spn_core.get_value_as_int()
+        if cores_use > cores:
+            glade = gtk.glade.XML("hybrid2.glade")
+            warning = glade.get_widget("dia_msg_core")
+            warning.set_markup("Your system has only " + str(cores) + " cores,\n"
+                              "which is less than demanded.\nSet to default!")
+            warning.run()
+            warning.destroy()
+            cores_use = cores
         
 
 
@@ -87,5 +98,7 @@ class win_main(object):
         
  
 if __name__ == "__main__":
+    #if os.path.exists(path_conf):
+    #else:
     app = win_main()
     gtk.main()

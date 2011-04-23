@@ -1,0 +1,236 @@
+<?xml version="1.0"?>
+<glade-interface>
+  <!-- interface-requires gtk+ 2.16 -->
+  <!-- interface-naming-policy project-wide -->
+  <widget class="GtkWindow" id="win_main">
+    <property name="border_width">6</property>
+    <property name="title" translatable="yes">Hybrid</property>
+    <property name="window_position">center</property>
+    <property name="default_width">840</property>
+    <property name="default_height">440</property>
+    <signal name="destroy" handler="on_win_main_destroy"/>
+    <child>
+      <widget class="GtkVBox" id="vbox1">
+        <property name="visible">True</property>
+        <property name="orientation">vertical</property>
+        <child>
+          <widget class="GtkNotebook" id="notebook1">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="tab_pos">bottom</property>
+            <child>
+              <widget class="GtkHBox" id="hbox1">
+                <property name="visible">True</property>
+                <child>
+                  <widget class="GtkVBox" id="vbox2">
+                    <property name="visible">True</property>
+                    <property name="orientation">vertical</property>
+                    <child>
+                      <widget class="GtkVButtonBox" id="vbuttonbox1">
+                        <property name="visible">True</property>
+                        <property name="orientation">vertical</property>
+                        <property name="spacing">2</property>
+                        <property name="layout_style">center</property>
+                        <child>
+                          <widget class="GtkToggleButton" id="toggle_swan">
+                            <property name="label" translatable="yes">Run SWAN</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                          </widget>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="GtkToggleButton" id="toggle_fvcom">
+                            <property name="label" translatable="yes">Run FVCOM</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                          </widget>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                      </widget>
+                      <packing>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <widget class="GtkHSeparator" id="hseparator1">
+                        <property name="visible">True</property>
+                      </widget>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <widget class="GtkVButtonBox" id="vbuttonbox2">
+                        <property name="visible">True</property>
+                        <property name="orientation">vertical</property>
+                        <property name="spacing">2</property>
+                        <property name="layout_style">center</property>
+                        <child>
+                          <widget class="GtkButton" id="but_settings">
+                            <property name="label" translatable="yes">Settings</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <signal name="clicked" handler="on_but_settings_clicked"/>
+                          </widget>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="GtkButton" id="but_about">
+                            <property name="label" translatable="yes">About</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                          </widget>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                      </widget>
+                      <packing>
+                        <property name="position">2</property>
+                      </packing>
+                    </child>
+                  </widget>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkVSeparator" id="vseparator1">
+                    <property name="visible">True</property>
+                    <property name="orientation">vertical</property>
+                  </widget>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkScrolledWindow" id="scrolledwindow1">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="hscrollbar_policy">automatic</property>
+                    <property name="vscrollbar_policy">automatic</property>
+                    <child>
+                      <widget class="GtkTextView" id="textview">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="border_width">2</property>
+                        <property name="editable">False</property>
+                        <property name="cursor_visible">False</property>
+                        <property name="text" translatable="yes">wakakakkka</property>
+                      </widget>
+                    </child>
+                  </widget>
+                  <packing>
+                    <property name="position">2</property>
+                  </packing>
+                </child>
+              </widget>
+            </child>
+            <child>
+              <widget class="GtkLabel" id="label1">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes">Action</property>
+              </widget>
+              <packing>
+                <property name="tab_expand">True</property>
+                <property name="tab_fill">False</property>
+                <property name="type">tab</property>
+              </packing>
+            </child>
+            <child>
+              <widget class="GtkHBox" id="hbox2">
+                <property name="visible">True</property>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <widget class="GtkVSeparator" id="vseparator2">
+                    <property name="visible">True</property>
+                    <property name="orientation">vertical</property>
+                  </widget>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+              </widget>
+              <packing>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <widget class="GtkLabel" id="label2">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes">Image</property>
+              </widget>
+              <packing>
+                <property name="position">1</property>
+                <property name="tab_expand">True</property>
+                <property name="tab_fill">False</property>
+                <property name="type">tab</property>
+              </packing>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <widget class="GtkLabel" id="label3">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes">Dir View</property>
+              </widget>
+              <packing>
+                <property name="position">2</property>
+                <property name="tab_expand">True</property>
+                <property name="tab_fill">False</property>
+                <property name="type">tab</property>
+              </packing>
+            </child>
+          </widget>
+          <packing>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <widget class="GtkStatusbar" id="statusbar1">
+            <property name="visible">True</property>
+            <property name="spacing">2</property>
+          </widget>
+          <packing>
+            <property name="expand">False</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+      </widget>
+    </child>
+  </widget>
+  <widget class="GtkWindow" id="win_settings">
+    <child>
+      <placeholder/>
+    </child>
+  </widget>
+</glade-interface>

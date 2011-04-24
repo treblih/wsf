@@ -4,7 +4,7 @@ import pygtk
 pygtk.require('2.0')
 import gtk
 import gtk.glade
-import os, sys
+import os, subprocess
 
 #import getpass
 # getpass.getuser() -> user name
@@ -14,7 +14,7 @@ cores_use = cores
 home = '/home/' + os.environ['USER'] + '/'
 path_conf = home + '.hybridrc'
 path_swan = home + 'swan'
-path_fvcom = home + 'fvcom'
+path_fvcom = home + 'FVCOM'
  
 class win_main(object):        
     def __init__(self):
@@ -24,7 +24,8 @@ class win_main(object):
         self.glade = gtk.glade.XML('hybrid2.glade')
         self.win_main = self.glade.get_widget('win_main')
         self.textview = self.glade.get_widget('textview')
-        #self.textview.set_buffer('nihao\nwakak\n')
+        self.textbuffer = self.textview.get_buffer()
+        #self.textbuffer.set_text("nihao\nwakkak\n")
         events = {'on_win_main_destroy':gtk.main_quit,
                  #'on_toggle_swan_toggled' : self.toggle_swan_toggled,
                  #'on_toggle_fvcom_toggled' : self.toggle_fvcom_toggled,
@@ -58,11 +59,22 @@ class win_main(object):
         about.destroy()
 
     def on_but_about_clicked(self, widget):
+        os.chdir(path_fvcom + '/run')
+        #proc = subprocess.Popen('mpirun -np 1 ../FVCOM_source/fvcom chn', 
+        proc = subprocess.Popen('top', 
+                                shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        while True:
+            line = proc.stdout.readline()
+            self.textbuffer.insert_at_cursor(line)
+            if not line:
+                break
+
         # essential, otherwise next time about will be NoneType
-        glade = gtk.glade.XML('hybrid2.glade')
-        about = glade.get_widget('dia_about')
-        about.run()
-        about.destroy()
+        #glade = gtk.glade.XML('hybrid2.glade')
+        #about = glade.get_widget('dia_about')
+        #about.run()
+        #about.destroy()
+
         #about = gtk.AboutDialog()
         #about.set_program_name('Hybrid')
         #about.set_version('0.1')

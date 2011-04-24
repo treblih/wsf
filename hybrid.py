@@ -5,6 +5,8 @@ pygtk.require('2.0')
 import gtk
 import gtk.glade
 import os, subprocess
+import glib
+import time
 
 #import getpass
 # getpass.getuser() -> user name
@@ -13,8 +15,8 @@ cores = os.sysconf('SC_NPROCESSORS_CONF')
 cores_use = cores
 home = '/home/' + os.environ['USER'] + '/'
 path_conf = home + '.hybridrc'
-path_swan = home + 'swan'
-path_fvcom = home + 'FVCOM'
+path_swan = home + 'swan/'
+path_fvcom = home + 'FVCOM/'
  
 class win_main(object):        
     def __init__(self):
@@ -59,15 +61,19 @@ class win_main(object):
         about.destroy()
 
     def on_but_about_clicked(self, widget):
-        os.chdir(path_fvcom + '/run')
+        os.chdir(path_fvcom + 'run')
         #proc = subprocess.Popen('mpirun -np 1 ../FVCOM_source/fvcom chn', 
-        proc = subprocess.Popen('top', 
+        proc = subprocess.Popen('ls ~', 
                                 shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        while True:
-            line = proc.stdout.readline()
-            self.textbuffer.insert_at_cursor(line)
-            if not line:
-                break
+        # Sun Apr 24 19:06:25 2011 -> Apr_24_19:06:25_2011.log
+        f_log = open(path_fvcom + time.asctime()[4:].replace(' ', '_') + '.log', 'w')
+        glib.io_add_watch(proc.stdout, glib.IO_IN, self.write_to_buffer, f_log)
+        #while True:
+            #line = proc.stdout.readline()
+            #if not line:
+                #break
+            #self.textbuffer.insert_at_cursor(line)
+        #print "OVER ------------------------------------"
 
         # essential, otherwise next time about will be NoneType
         #glade = gtk.glade.XML('hybrid2.glade')
@@ -84,6 +90,15 @@ class win_main(object):
         #about.set_logo(gtk.gdk.pixbuf_new_from_file('hybrid.png'))
         #about.run()
         #about.destroy()
+
+    def write_to_buffer(self, fd, condition, f_log):
+        if condition == glib.IO_IN: #IF THERE'S SOMETHING INTERESTING TO READ
+           line = fd.readline()
+           self.textbuffer.insert_at_cursor(line) # WHEN RUNNING DON'T TOUCH THE TEXTVIEW!!
+           f_log.write(line)
+           return True # FUNDAMENTAL, OTHERWISE THE CALLBACK ISN'T RECALLED
+        else:
+           return False # RAISED AN ERROR: EXIT AND I DON'T WANT TO SEE YOU ANYMOR
     
     def settings_ok(self, widget, chk_autorun, spn_core, ent_swan, ent_fvcom):
         global autorun, cores_use
@@ -98,8 +113,6 @@ class win_main(object):
             warning.destroy()
             cores_use = cores
         
-
-
 #class win_settintgs(object):
     #def __init__(self):
         #pass

@@ -6,8 +6,8 @@
     <property name="border_width">6</property>
     <property name="title" translatable="yes">Hybrid</property>
     <property name="window_position">center</property>
-    <property name="default_width">840</property>
-    <property name="default_height">440</property>
+    <property name="default_width">1000</property>
+    <property name="default_height">500</property>
     <property name="icon">hybrid.png</property>
     <signal name="destroy" handler="on_win_main_destroy"/>
     <child>
@@ -29,6 +29,7 @@
                     <child>
                       <widget class="GtkVButtonBox" id="vbuttonbox1">
                         <property name="visible">True</property>
+                        <property name="border_width">5</property>
                         <property name="orientation">vertical</property>
                         <property name="spacing">2</property>
                         <property name="layout_style">center</property>
@@ -75,6 +76,7 @@
                     <child>
                       <widget class="GtkVButtonBox" id="vbuttonbox2">
                         <property name="visible">True</property>
+                        <property name="border_width">5</property>
                         <property name="orientation">vertical</property>
                         <property name="spacing">2</property>
                         <property name="layout_style">center</property>
@@ -131,6 +133,7 @@
                   <widget class="GtkScrolledWindow" id="scrolledwindow1">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <property name="border_width">5</property>
                     <property name="hscrollbar_policy">automatic</property>
                     <property name="vscrollbar_policy">automatic</property>
                     <child>

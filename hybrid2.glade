@@ -27,18 +27,18 @@
                     <property name="visible">True</property>
                     <property name="orientation">vertical</property>
                     <child>
-                      <widget class="GtkVButtonBox" id="vbuttonbox1">
+                      <widget class="GtkVButtonBox" id="vbuttonbox3">
                         <property name="visible">True</property>
                         <property name="border_width">5</property>
                         <property name="orientation">vertical</property>
                         <property name="spacing">2</property>
-                        <property name="layout_style">center</property>
                         <child>
-                          <widget class="GtkToggleButton" id="toggle_swan">
-                            <property name="label" translatable="yes">Run SWAN</property>
+                          <widget class="GtkButton" id="but_swan">
+                            <property name="label" translatable="yes">Compile SWAN</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
+                            <signal name="clicked" handler="on_but_swan_clicked"/>
                           </widget>
                           <packing>
                             <property name="expand">False</property>
@@ -47,11 +47,12 @@
                           </packing>
                         </child>
                         <child>
-                          <widget class="GtkToggleButton" id="toggle_fvcom">
-                            <property name="label" translatable="yes">Run FVCOM</property>
+                          <widget class="GtkButton" id="but_fvcom">
+                            <property name="label" translatable="yes">Compile FVCOM</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
+                            <signal name="clicked" handler="on_but_fvcom_clicked"/>
                           </widget>
                           <packing>
                             <property name="expand">False</property>
@@ -65,12 +66,61 @@
                       </packing>
                     </child>
                     <child>
-                      <widget class="GtkHSeparator" id="hseparator1">
+                      <widget class="GtkHSeparator" id="hseparator2">
                         <property name="visible">True</property>
                       </widget>
                       <packing>
                         <property name="expand">False</property>
                         <property name="position">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <widget class="GtkVButtonBox" id="vbuttonbox1">
+                        <property name="visible">True</property>
+                        <property name="border_width">5</property>
+                        <property name="orientation">vertical</property>
+                        <property name="spacing">2</property>
+                        <property name="layout_style">center</property>
+                        <child>
+                          <widget class="GtkToggleButton" id="toggle_swan">
+                            <property name="label" translatable="yes">Run SWAN</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <signal name="clicked" handler="on_toggle_swan_clicked"/>
+                          </widget>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="GtkToggleButton" id="toggle_fvcom">
+                            <property name="label" translatable="yes">Run FVCOM</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <signal name="clicked" handler="on_toggle_fvcom_clicked"/>
+                          </widget>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                      </widget>
+                      <packing>
+                        <property name="position">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <widget class="GtkHSeparator" id="hseparator1">
+                        <property name="visible">True</property>
+                      </widget>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="position">3</property>
                       </packing>
                     </child>
                     <child>
@@ -110,7 +160,7 @@
                         </child>
                       </widget>
                       <packing>
-                        <property name="position">2</property>
+                        <property name="position">4</property>
                       </packing>
                     </child>
                   </widget>

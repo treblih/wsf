@@ -4,8 +4,9 @@ import pygtk
 pygtk.require('2.0')
 import gtk
 import gtk.glade
-import os, subprocess
 import glib
+import os
+import subprocess
 import time
 
 #import getpass
@@ -15,8 +16,20 @@ cores = os.sysconf('SC_NPROCESSORS_CONF')
 cores_use = cores
 home = '/home/' + os.environ['USER'] + '/'
 path_conf = home + '.hybridrc'
-path_swan = home + 'swan/'
-path_fvcom = home + 'FVCOM/'
+NAME, PATH, COMPILE = range(3)
+cmd = {'wrf':  ('wrf', 
+                home+'wrf/', 
+                ''
+               ), 
+       'swan': ('swan', 
+                home+'swan/', 
+                'make clean && make config && make mpi'
+               ),
+       'fvcom':('fvcom', 
+                home+'FVCOM/', 
+                'make clean && make'
+               )
+      }
  
 class win_main(object):        
     def __init__(self):
@@ -28,19 +41,34 @@ class win_main(object):
         self.textview = self.glade.get_widget('textview')
         self.textbuffer = self.textview.get_buffer()
         #self.textbuffer.set_text("nihao\nwakkak\n")
-        events = {'on_win_main_destroy':gtk.main_quit,
-                 #'on_toggle_swan_toggled' : self.toggle_swan_toggled,
-                 #'on_toggle_fvcom_toggled' : self.toggle_fvcom_toggled,
+        signals = {'on_win_main_destroy':gtk.main_quit,
+                  'on_but_swan_clicked':(self.on_but_cmd_clicked, cmd['swan']),
+                  'on_but_fvcom_clicked':(self.on_but_cmd_clicked, cmd['fvcom']),
+                  'on_toggle_swan_clicked':(self.on_toggle_cmd_clicked, cmd['swan']),
+                  'on_toggle_fvcom_clicked':(self.on_toggle_cmd_clicked, cmd['fvcom']),
                   'on_but_settings_clicked':self.on_but_settings_clicked,
                   'on_but_about_clicked':self.on_but_about_clicked,
                   #'on_but_set_cancel_clicked':self.on_but_set_cancel_clicked,
                  }
-        self.glade.signal_autoconnect(events)
+        self.glade.signal_autoconnect(signals)
         #self.window = self.builder.get_object('win_main')
         self.win_main.show()
 
     #def on_toggle_swan_toggled(self):
         #print 'hinaoo'
+
+    def on_but_cmd_clicked(self, widget, which);
+        widget.set_sensitive(False)
+        subprocess 
+
+    def on_toggle_cmd_clicked(self, widget, tool):
+        if widget.get_active():
+            widget.set_label('Stop ' + tool.upper())
+            #run_cmd()
+        else:
+            widget.set_label('Run ' + tool.upper())
+            #stop_cmd()
+
 
     def on_but_settings_clicked(self, widget):
         glade = gtk.glade.XML('hybrid2.glade')
@@ -53,21 +81,22 @@ class win_main(object):
         ok = glade.get_widget('but_set_ok')
         chk_autorun.set_active(autorun)
         spn_core.set_value(cores)
-        ent_swan.set_text(path_swan)
-        ent_fvcom.set_text(path_fvcom)
+        ent_swan.set_text(cmd['swan'][PATH])
+        ent_fvcom.set_text(cmd['fvcom'][PATH])
         ok.connect('clicked', self.settings_ok, 
                    chk_autorun, spn_core, ent_swan, ent_fvcom)
         about.run()
         about.destroy()
 
     def on_but_about_clicked(self, widget):
-        os.chdir(path_fvcom + 'run')
+        widget.set_sensitive(False)
+        #os.chdir(cmd['fvcom'][PATH] + 'run')
         #proc = subprocess.Popen('mpirun -np 1 ../FVCOM_source/fvcom chn', 
-        proc = subprocess.Popen('ls ~', 
-                                shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        #proc = subprocess.Popen('ls ~', 
+                                #shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         # Sun Apr 24 19:06:25 2011 -> Apr_24_19:06:25_2011.log
-        f_log = open(path_fvcom + time.asctime()[4:].replace(' ', '_') + '.log', 'w')
-        glib.io_add_watch(proc.stdout, glib.IO_IN, self.write_to_buffer, f_log)
+        #f_log = open(cmd['fvcom'][PATH] + time.asctime()[4:].replace(' ', '_') + '.log', 'w')
+        #glib.io_add_watch(proc.stdout, glib.IO_IN, self.write_to_buffer, f_log)
         #while True:
             #line = proc.stdout.readline()
             #if not line:
@@ -78,16 +107,6 @@ class win_main(object):
         # essential, otherwise next time about will be NoneType
         #glade = gtk.glade.XML('hybrid2.glade')
         #about = glade.get_widget('dia_about')
-        #about.run()
-        #about.destroy()
-
-        #about = gtk.AboutDialog()
-        #about.set_program_name('Hybrid')
-        #about.set_version('0.1')
-        #about.set_copyright('(c) Yang Zhang')
-        #about.set_comments('Hybrid is a composition of SWAN/FVCOM')
-        #about.set_website('http://github.com/treblih/hybrid.git')
-        #about.set_logo(gtk.gdk.pixbuf_new_from_file('hybrid.png'))
         #about.run()
         #about.destroy()
 
@@ -126,8 +145,8 @@ class win_main(object):
     for the sake of miss-manipulation. '''
 conf_str = \
 '''autorun=True
-path_swan=''' +  path_swan + '''
-path_fvcom=''' + path_fvcom + '''
+swan_dir_path='''   + cmd['swan'][PATH]  + '''
+fvcom_dir_pathm=''' + cmd['fvcom'][PATH] + '''
 '''
  
 if __name__ == '__main__':

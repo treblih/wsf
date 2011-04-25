@@ -6,7 +6,7 @@ import gtk
 import gtk.glade
 import glib
 import os
-import subprocess
+from subprocess import *
 import time
 
 #import getpass
@@ -16,18 +16,27 @@ cores = os.sysconf('SC_NPROCESSORS_CONF')
 cores_use = cores
 home = '/home/' + os.environ['USER'] + '/'
 path_conf = home + '.hybridrc'
-NAME, PATH, COMPILE = range(3)
+NAME, BASE_DIR, CMP_DIR, RUN_DIR, CMP, RUN = range(6)
 cmd = {'wrf':  ('wrf', 
                 home+'wrf/', 
+                home+'wrf/', 
+                home+'wrf/',
+                '',
                 ''
                ), 
        'swan': ('swan', 
                 home+'swan/', 
-                'make clean && make config && make mpi'
+                home+'swan/', 
+                home+'swan/', 
+                'make clean && make config && make mpi',
+                ''
                ),
        'fvcom':('fvcom', 
                 home+'FVCOM/', 
-                'make clean && make'
+                home+'FVCOM/FVCOM_source/', 
+                home+'FVCOM/run/',
+                'make clean && make',
+                'mpirun -np ' + str(cores) + '../FVCOM_source/fvcom chn'
                )
       }
  
@@ -42,33 +51,38 @@ class win_main(object):
         self.textbuffer = self.textview.get_buffer()
         #self.textbuffer.set_text("nihao\nwakkak\n")
         signals = {'on_win_main_destroy':gtk.main_quit,
-                  'on_but_swan_clicked':(self.on_but_cmd_clicked, cmd['swan']),
-                  'on_but_fvcom_clicked':(self.on_but_cmd_clicked, cmd['fvcom']),
-                  'on_toggle_swan_clicked':(self.on_toggle_cmd_clicked, cmd['swan']),
-                  'on_toggle_fvcom_clicked':(self.on_toggle_cmd_clicked, cmd['fvcom']),
-                  'on_but_settings_clicked':self.on_but_settings_clicked,
-                  'on_but_about_clicked':self.on_but_about_clicked,
-                  #'on_but_set_cancel_clicked':self.on_but_set_cancel_clicked,
-                 }
+                   'on_but_swan_clicked':(self.on_but_cmd_clicked, cmd['swan']),
+                   'on_but_fvcom_clicked':(self.on_but_cmd_clicked, cmd['fvcom']),
+                   'on_toggle_swan_clicked':(self.on_toggle_cmd_clicked, cmd['swan']),
+                   'on_toggle_fvcom_clicked':(self.on_toggle_cmd_clicked, cmd['fvcom']),
+                   'on_but_settings_clicked':self.on_but_settings_clicked,
+                   'on_but_about_clicked':self.on_but_about_clicked,
+                   #'on_but_set_cancel_clicked':self.on_but_set_cancel_clicked,
+                  }
         self.glade.signal_autoconnect(signals)
         #self.window = self.builder.get_object('win_main')
-        self.win_main.show()
+        self.win_main.show_all()
 
-    #def on_toggle_swan_toggled(self):
-        #print 'hinaoo'
-
-    def on_but_cmd_clicked(self, widget, which);
+    def on_but_cmd_clicked(self, widget, which):
         widget.set_sensitive(False)
-        subprocess 
+        #os.chdir(which[CMP_DIR])
+        proc = Popen(which[CMP], shell=True, stdout=PIPE, stderr=STDOUT)
+        glib.io_add_watch(proc.stdout, glib.IO_IN, self.write_to_buffer, 
+                          '', self.textbuffer, widget)
 
-    def on_toggle_cmd_clicked(self, widget, tool):
-        if widget.get_active():
-            widget.set_label('Stop ' + tool.upper())
-            #run_cmd()
-        else:
-            widget.set_label('Run ' + tool.upper())
-            #stop_cmd()
-
+    def on_toggle_cmd_clicked(self, widget, which):
+        widget.set_active(False)
+        os.chdir(which[RUN_DIR])
+        proc = Popen(which[RUN],shell=True, stdout=PIPE, stderr=STDOUT)
+        # Sun Apr 24 19:06:25 2011 -> Apr_24_19:06:25_2011.log
+        f_log = open(which[BASE_DIR] + time.asctime()[4:].replace(' ', '_') + '.log', 'w')
+        glib.io_add_watch(proc.stdout, glib.IO_IN, self.write_to_buffer,
+                          f_log, self.textbuffer, widget)
+        #while True:
+            #line = proc.stdout.readline()
+            #if not line:
+                #break
+            #self.textbuffer.insert_at_cursor(line)
 
     def on_but_settings_clicked(self, widget):
         glade = gtk.glade.XML('hybrid2.glade')
@@ -89,35 +103,31 @@ class win_main(object):
         about.destroy()
 
     def on_but_about_clicked(self, widget):
-        widget.set_sensitive(False)
-        #os.chdir(cmd['fvcom'][PATH] + 'run')
-        #proc = subprocess.Popen('mpirun -np 1 ../FVCOM_source/fvcom chn', 
-        #proc = subprocess.Popen('ls ~', 
-                                #shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        # Sun Apr 24 19:06:25 2011 -> Apr_24_19:06:25_2011.log
-        #f_log = open(cmd['fvcom'][PATH] + time.asctime()[4:].replace(' ', '_') + '.log', 'w')
-        #glib.io_add_watch(proc.stdout, glib.IO_IN, self.write_to_buffer, f_log)
-        #while True:
-            #line = proc.stdout.readline()
-            #if not line:
-                #break
-            #self.textbuffer.insert_at_cursor(line)
-        #print "OVER ------------------------------------"
-
         # essential, otherwise next time about will be NoneType
-        #glade = gtk.glade.XML('hybrid2.glade')
-        #about = glade.get_widget('dia_about')
-        #about.run()
-        #about.destroy()
+        glade = gtk.glade.XML('hybrid2.glade')
+        about = glade.get_widget('dia_about')
+        about.run()
+        about.destroy()
 
-    def write_to_buffer(self, fd, condition, f_log):
-        if condition == glib.IO_IN: #IF THERE'S SOMETHING INTERESTING TO READ
-           line = fd.readline()
-           self.textbuffer.insert_at_cursor(line) # WHEN RUNNING DON'T TOUCH THE TEXTVIEW!!
-           f_log.write(line)
-           return True # FUNDAMENTAL, OTHERWISE THE CALLBACK ISN'T RECALLED
+    def write_to_buffer(self, fd, condition, f_log, textbuffer, widget):
+        #if condition == glib.IO_IN: #IF THERE'S SOMETHING INTERESTING TO READ
+        line = fd.readline()
+        if line:
+            textbuffer.insert_at_cursor(line) # WHEN RUNNING DON'T TOUCH THE TEXTVIEW!!
+            if f_log:
+                f_log.write(line)
+            return True # FUNDAMENTAL, OTHERWISE THE CALLBACK ISN'T RECALLED
         else:
-           return False # RAISED AN ERROR: EXIT AND I DON'T WANT TO SEE YOU ANYMOR
+            # gtk.Button
+            print 'HEHEHEHHE----------'
+            if hasattr(widget, 'set_sensitive'):
+                print 'sensitive'
+                widget.set_sensitive(True)
+            # gtk.ToggleButton
+            else: 
+                print 'active'
+                widget.set_active(True)
+            return False
     
     def settings_ok(self, widget, chk_autorun, spn_core, ent_swan, ent_fvcom):
         global autorun, cores_use
@@ -132,21 +142,13 @@ class win_main(object):
             warning.destroy()
             cores_use = cores
         
-#class win_settintgs(object):
-    #def __init__(self):
-        #pass
-
-    #def run(self):
-        #self.glade = gtk.glade.XML('fvcom.glade', 'win_settintgs')
-        #win_settintgs = self.glade.get_widget('win_settintgs')
-        #win_settintgs.run()
 
 ''' Drop sys_cores from config file, count it every running.
     for the sake of miss-manipulation. '''
 conf_str = \
 '''autorun=True
-swan_dir_path='''   + cmd['swan'][PATH]  + '''
-fvcom_dir_pathm=''' + cmd['fvcom'][PATH] + '''
+swan_dir_path='''   + cmd['swan'][BASE_DIR]  + '''
+fvcom_dir_pathm=''' + cmd['fvcom'][BASE_DIR] + '''
 '''
  
 if __name__ == '__main__':

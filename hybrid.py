@@ -80,12 +80,12 @@ class win_main(object):
         self.win_main = self.glade.get_widget('win_main')
         self.run = 1
 
-        #self.textbuffer.set_text("nihao\nwakkak\n")
         signals = {'on_win_main_destroy':gtk.main_quit,
                    'on_but_swan_clicked':(self.on_but_cmd_clicked, cmd['swan']),
                    'on_but_fvcom_clicked':(self.on_but_cmd_clicked, cmd['fvcom']),
                    'on_toggle_swan_clicked':(self.on_toggle_cmd_clicked, cmd['swan']),
                    'on_toggle_fvcom_clicked':(self.on_toggle_cmd_clicked, cmd['fvcom']),
+                   'on_but_clear_clicked':self.on_but_clear_clicked,
                    'on_but_settings_clicked':self.on_but_settings_clicked,
                    'on_but_about_clicked':self.on_but_about_clicked,
                    #'on_but_set_cancel_clicked':self.on_but_set_cancel_clicked,
@@ -97,12 +97,12 @@ class win_main(object):
     # it could be def on_but_cmd_clicked(self, widget):
     def on_but_cmd_clicked(self, widget, which):
         widget.set_sensitive(False)
+        self.run = 1
         t = Thread(target=self.redirect_to_textbuffer, args=(widget, which))
         t.daemon = True
         t.start()
 
     def redirect_to_textbuffer(self, widget, which, textview='tv_cmp', base_dir=''):
-        print textview
         view = self.glade.get_widget(textview)
         buffer = view.get_buffer()
         log = ''
@@ -143,6 +143,19 @@ class win_main(object):
         else:
             self.run = 0
 
+    def on_but_clear_clicked(self, widget):
+        nb_outputs = self.glade.get_widget('nb_outputs')
+        index = nb_outputs.get_current_page()
+        print index
+        print cmd[index]
+        view = self.glade.get_widget(cmd[index][TEXTVIEW])
+        print type(view)
+        buffer = view.get_buffer()
+        iter_start = buffer.get_start_iter()
+        iter_end = buffer.get_end_iter()
+        buffer.delete(iter_start, iter_end)
+        buffer.place_cursor(iter_start)
+
     def on_but_settings_clicked(self, widget):
         glade = gtk.glade.XML('hybrid2.glade')
         about = glade.get_widget('dia_settings')
@@ -154,12 +167,12 @@ class win_main(object):
         ok = glade.get_widget('but_set_ok')
         chk_autorun.set_active(autorun)
         spn_core.set_value(cores)
-        ent_swan.set_text(cmd['swan'][PATH])
-        ent_fvcom.set_text(cmd['fvcom'][PATH])
+        ent_swan.set_text(cmd['swan'][BASE_DIR])
+        ent_fvcom.set_text(cmd['fvcom'][BASE_DIR])
         ok.connect('clicked', self.settings_ok, 
                    chk_autorun, spn_core, ent_swan, ent_fvcom)
         about.run()
-        #about.destroy()
+        about.destroy()
 
     def on_but_about_clicked(self, widget):
         # essential, otherwise next time about will be NoneType
@@ -167,13 +180,6 @@ class win_main(object):
         about = self.glade.get_widget('dia_about')
         about.run()
         about.destroy()
-
-    def write_to_buffer(self, fd, condition, textbuffer, widget, f_log):
-        line = fd.readline() # WE READ ONE BYTE PER TIME, TO AVOID BLOCKING
-        if f_log:
-            f_log.write(line)
-        self.textbuffer.insert_at_cursor(line) # WHEN RUNNING DON'T TOUCH THE TEXTVIEW!!
-        return True
     
     def settings_ok(self, widget, chk_autorun, spn_core, ent_swan, ent_fvcom):
         global autorun, cores_use
@@ -187,6 +193,8 @@ class win_main(object):
             warning.run()
             warning.destroy()
             cores_use = cores
+            # spn_core.set_value(float(cores)), seems no valuable, 
+            # because the window has been destroyed
         
 
 ''' Drop sys_cores from config file, count it every running.
@@ -196,7 +204,6 @@ conf_str = \
 swan_dir_path='''   + cmd['swan'][BASE_DIR]  + '''
 fvcom_dir_pathm=''' + cmd['fvcom'][BASE_DIR] + '''
 '''
-
  
 if __name__ == '__main__':
     gobject.threads_init()

@@ -4,7 +4,6 @@ import pygtk
 pygtk.require('2.0')
 import gtk
 import gtk.glade
-import glib
 import os
 from subprocess import *
 from threading import Thread
@@ -23,53 +22,51 @@ cores_use = cores
 home = '/home/' + os.environ['USER'] + '/'
 path_conf = home + '.hybridrc'
 
-INDEX, NAME, TEXTVIEW, BASE_DIR, CMP_DIR, RUN_DIR, CMP, RUN = range(8)
-cmd = {'cmp':  (0,
-                '', 
-                'tv_cmp',
-                '',
-                '',
-                '',
-                '',
-                '',
-               ),
-       'wrf':  (1,
-                'wrf', 
-                'tv_wrf', 
-                home+'wrf/', 
-                home+'wrf/', 
-                home+'wrf/',
-                '',
-                '',
-               ), 
-       ##################################
+CMP, SWAN, FVCOM = range(3)
+NAME, TEXTVIEW, BASE_DIR, CMP_DIR, RUN_DIR, CMP_CMD, RUN_CMD = range(7)
+cmd = [(
+        '', 
+        'tv_cmp',
+        '',
+        '',
+        '',
+        '',
+        '',
+       ),
+       #(
+        #'WRF', 
+        #'tv_wrf', 
+        #home+'wrf/', 
+        #home+'wrf/', 
+        #home+'wrf/',
+        #'',
+        #'',
+       #), 
        ##################################
        ### no wrf now, change INDEX
        ##################################
-       ##################################
-       ##################################
-       'swan': (1,
-                'swan', 
-                'tv_swan',
-                home+'swan/', 
-                home+'swan/', 
-                home+'swan/', 
-                #'ls /',
-                'make clean && make config && make mpi',
-                #'ping yahoo.com -c 15',
-                #'cat /home/hask/share/txt/*',
-                '',
-               ),
-       'fvcom':(2,
-                'fvcom', 
-                'tv_fvcom', 
-                home+'FVCOM/', 
-                home+'FVCOM/FVCOM_source/', 
-                home+'FVCOM/run/',
-                'make clean && make',
-                'mpirun -np ' + str(cores) + ' ../FVCOM_source/fvcom chn',
-               ),
-      }
+       (
+        'SWAN', 
+        'tv_swan',
+        home+'swan/', 
+        home+'swan/', 
+        home+'swan/', 
+        #'ls /',
+        'make clean && make config && make mpi',
+        #'ping yahoo.com -c 15',
+        #'cat /home/hask/share/txt/*',
+        '',
+       ),
+       (
+        'FVCOM', 
+        'tv_fvcom', 
+        home+'FVCOM/', 
+        home+'FVCOM/FVCOM_source/', 
+        home+'FVCOM/run/',
+        'make clean && make',
+        'mpirun -np ' + str(cores) + ' ../FVCOM_source/fvcom chn',
+       ),
+      ]
  
 class win_main(object):        
     def __init__(self):
@@ -81,10 +78,10 @@ class win_main(object):
         self.run = 1
 
         signals = {'on_win_main_destroy':gtk.main_quit,
-                   'on_but_swan_clicked':(self.on_but_cmd_clicked, cmd['swan']),
-                   'on_but_fvcom_clicked':(self.on_but_cmd_clicked, cmd['fvcom']),
-                   'on_toggle_swan_clicked':(self.on_toggle_cmd_clicked, cmd['swan']),
-                   'on_toggle_fvcom_clicked':(self.on_toggle_cmd_clicked, cmd['fvcom']),
+                   'on_but_swan_clicked':(self.on_but_cmd_clicked, cmd[SWAN]),
+                   'on_but_fvcom_clicked':(self.on_but_cmd_clicked, cmd[FVCOM]),
+                   'on_toggle_swan_clicked':(self.on_toggle_cmd_clicked, cmd[SWAN]),
+                   'on_toggle_fvcom_clicked':(self.on_toggle_cmd_clicked, cmd[FVCOM]),
                    'on_but_clear_clicked':self.on_but_clear_clicked,
                    'on_but_settings_clicked':self.on_but_settings_clicked,
                    'on_but_about_clicked':self.on_but_about_clicked,
@@ -108,12 +105,12 @@ class win_main(object):
         log = ''
         f_log = None
         if base_dir:
-            p = Popen(which[RUN], shell=True, stdout=PIPE, stderr=STDOUT, cwd=which[RUN_DIR])
+            p = Popen(which[RUN_CMD], shell=True, stdout=PIPE, stderr=STDOUT, cwd=which[RUN_DIR])
             ## Sun Apr 24 19:06:25 2011 -> Apr_24_19:06:25_2011.log
             log = base_dir + time.asctime()[4:].replace(' ', '_') + '.log'
             f_log = open(log, 'w')
         else:
-            p = Popen(which[CMP], shell=True, stdout=PIPE, stderr=STDOUT, cwd=which[CMP_DIR])
+            p = Popen(which[CMP_CMD], shell=True, stdout=PIPE, stderr=STDOUT, cwd=which[CMP_DIR])
         while 1:
             line = p.stdout.readline()
             if not line or self.run == 0:
@@ -146,10 +143,8 @@ class win_main(object):
     def on_but_clear_clicked(self, widget):
         nb_outputs = self.glade.get_widget('nb_outputs')
         index = nb_outputs.get_current_page()
-        print index
-        print cmd[index]
+        print cmd[index][TEXTVIEW]
         view = self.glade.get_widget(cmd[index][TEXTVIEW])
-        print type(view)
         buffer = view.get_buffer()
         iter_start = buffer.get_start_iter()
         iter_end = buffer.get_end_iter()
@@ -167,8 +162,8 @@ class win_main(object):
         ok = glade.get_widget('but_set_ok')
         chk_autorun.set_active(autorun)
         spn_core.set_value(cores)
-        ent_swan.set_text(cmd['swan'][BASE_DIR])
-        ent_fvcom.set_text(cmd['fvcom'][BASE_DIR])
+        ent_swan.set_text(cmd[SWAN][BASE_DIR])
+        ent_fvcom.set_text(cmd[FVCOM][BASE_DIR])
         ok.connect('clicked', self.settings_ok, 
                    chk_autorun, spn_core, ent_swan, ent_fvcom)
         about.run()
@@ -201,8 +196,8 @@ class win_main(object):
     for the sake of miss-manipulation. '''
 conf_str = \
 '''autorun=True
-swan_dir_path='''   + cmd['swan'][BASE_DIR]  + '''
-fvcom_dir_pathm=''' + cmd['fvcom'][BASE_DIR] + '''
+swan_dir_path='''   + cmd[SWAN][BASE_DIR]  + '''
+fvcom_dir_path=''' + cmd[FVCOM][BASE_DIR] + '''
 '''
  
 if __name__ == '__main__':

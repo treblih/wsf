@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 
 import os
+import sys
 import glob
 
 if __name__ == '__main__':
+    os.chdir('/home/hask/FVCOM')
+
     #filename = 1
     #try:
         #fd = open('/media/sda6/CONCENTRATION.DAT', 'r')
@@ -12,7 +15,7 @@ if __name__ == '__main__':
         #sys.exit(1)
     #while 1:
         #try:
-            #fd_w = open('/home/hask/FVCOM/' + str(filename) + '.dat', 'w')
+            #fd_w = open(str(filename) + '.dat', 'w')
         #except IOError:
             #print 'Opening %d for writing' % filename
             #sys.exit(1)
@@ -26,7 +29,7 @@ if __name__ == '__main__':
             #i += 1
         #fd_w.close()
         #filename += 1
-    os.chdir('/home/hask/FVCOM')
+
     for dat in glob.glob('*.dat'):
         index = os.path.splitext(dat)[0]
         try:
@@ -34,14 +37,14 @@ if __name__ == '__main__':
             fd_w = open(index + '.plot', 'w')
         except IOError, e:
             print e
-        x = 0
+        y = 199
         line = fd.readline()
         while line:
-            for y, num in enumerate(line.split()):
+            for x, num in enumerate(line.split()):
                 newline = str(x) + ' ' + str(y) + ' ' + num + '\n'
                 fd_w.write(newline)
             fd_w.write('\n')
-            x += 1
+            y -= 1
             line = fd.readline()
         fd.close()
         fd_w.close()

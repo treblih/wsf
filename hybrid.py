@@ -111,6 +111,7 @@ class win_main(object):
             self.index = index
 
     def animation(self, widget):
+        print type(widget), 'animation'
         index = self.index
         while index <= 140:
             self.update_img(index)
@@ -122,13 +123,14 @@ class win_main(object):
         #widget.set_active(False)
 
     def on_tog_animation_clicked(self, widget):
+        print type(widget), 'tog animation'
         if widget.get_active():
             widget.set_label('Stop Animation')
-            t = Thread(target=self.animation, args=widget)
-            #t.daemon = True
+            t = Thread(target=self.animation, args=(widget,))
             t.start()
         else:
             pass
+        print type(widget)
 
     def on_hscale_value_changed(self, widget):
         # hscale doesn't have get_value_as_int()
@@ -146,6 +148,7 @@ class win_main(object):
         t.start()
 
     def redirect_to_textbuffer(self, widget, which, textview='tv_cmp', base_dir=''):
+        print type(widget), 'redirect'
         view = self.glade.get_widget(textview)
         buffer = view.get_buffer()
         log = ''
@@ -178,6 +181,7 @@ class win_main(object):
 
     def on_tog_cmd_clicked(self, widget, which):
         #if widget.get_active() and self.run:
+        print type(widget), 'tog cmd'
         if widget.get_active():
             self.run = 1
             widget.set_label('Stop ' + which[NAME])

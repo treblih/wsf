@@ -75,21 +75,67 @@ class win_main(object):
         #self.builder.connect_signals(
         self.glade = gtk.glade.XML('hybrid2.glade')
         self.win_main = self.glade.get_widget('win_main')
+        self.index = 0 # map img index
         self.run = 1
 
         signals = {'on_win_main_destroy':gtk.main_quit,
                    'on_but_swan_clicked':(self.on_but_cmd_clicked, cmd[SWAN]),
                    'on_but_fvcom_clicked':(self.on_but_cmd_clicked, cmd[FVCOM]),
-                   'on_toggle_swan_clicked':(self.on_toggle_cmd_clicked, cmd[SWAN]),
-                   'on_toggle_fvcom_clicked':(self.on_toggle_cmd_clicked, cmd[FVCOM]),
+                   'on_tog_swan_clicked':(self.on_tog_cmd_clicked, cmd[SWAN]),
+                   'on_tog_fvcom_clicked':(self.on_tog_cmd_clicked, cmd[FVCOM]),
                    'on_but_clear_clicked':self.on_but_clear_clicked,
                    'on_but_settings_clicked':self.on_but_settings_clicked,
                    'on_but_about_clicked':self.on_but_about_clicked,
+                   'on_tog_animation_clicked':self.on_tog_animation_clicked,
+                   'on_hscale_value_changed':self.on_hscale_value_changed,
+                   'on_spn_period_value_changed':self.on_spn_period_value_changed,
+                   #'on_button1_clicked':self.on_button1_clicked,
                    #'on_but_set_cancel_clicked':self.on_but_set_cancel_clicked,
                   }
         self.glade.signal_autoconnect(signals)
         #self.window = self.builder.get_object('win_main')
+        self.img_map = self.glade.get_widget('img_map')
+        self.img_map.set_from_file('/home/hask/FVCOM/1.png')
+        self.hscale = self.glade.get_widget('hscale')
+        self.spn_period = self.glade.get_widget('spn_period')
         self.win_main.show_all()
+
+    def on_spn_period_value_changed(self, widget):
+        index = widget.get_value_as_int()
+        self.update_img(index)
+        self.hscale.set_value(index)
+
+    def update_img(self, index):
+        if self.index <> index:
+            self.img_map.set_from_file('/home/hask/FVCOM/' + str(index) + '.png')
+            self.index = index
+
+    def animation(self, widget):
+        index = self.index
+        while index <= 140:
+            self.update_img(index)
+            self.hscale.set_value(index)
+            self.spn_period.set_value(index)
+            time.sleep(0.1)
+            index += 1
+        widget.set_label('Start Animation')
+        #widget.set_active(False)
+
+    def on_tog_animation_clicked(self, widget):
+        if widget.get_active():
+            widget.set_label('Stop Animation')
+            t = Thread(target=self.animation, args=widget)
+            #t.daemon = True
+            t.start()
+        else:
+            pass
+
+    def on_hscale_value_changed(self, widget):
+        # hscale doesn't have get_value_as_int()
+        # and it's always 11.0, set_digits(0) doesn't work
+        index = int(widget.get_value())
+        self.update_img(index)
+        self.spn_period.set_value(index)
 
     # it could be def on_but_cmd_clicked(self, widget):
     def on_but_cmd_clicked(self, widget, which):
@@ -106,7 +152,7 @@ class win_main(object):
         f_log = None
         if base_dir:
             p = Popen(which[RUN_CMD], shell=True, stdout=PIPE, stderr=STDOUT, cwd=which[RUN_DIR])
-            ## Sun Apr 24 19:06:25 2011 -> Apr_24_19:06:25_2011.log
+            # Sun Apr 24 19:06:25 2011 -> Apr_24_19:06:25_2011.log
             log = base_dir + time.asctime()[4:].replace(' ', '_') + '.log'
             f_log = open(log, 'w')
         else:
@@ -126,10 +172,11 @@ class win_main(object):
         if base_dir:
             f_log.close()
             widget.set_label('Run ' + which[NAME])
+            widget.set_active(False)
         else:
             widget.set_sensitive(True)
 
-    def on_toggle_cmd_clicked(self, widget, which):
+    def on_tog_cmd_clicked(self, widget, which):
         #if widget.get_active() and self.run:
         if widget.get_active():
             self.run = 1

@@ -83,12 +83,12 @@
                         <property name="spacing">2</property>
                         <property name="layout_style">center</property>
                         <child>
-                          <widget class="GtkToggleButton" id="toggle_swan">
+                          <widget class="GtkToggleButton" id="tog_swan">
                             <property name="label" translatable="yes">Run SWAN</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
-                            <signal name="clicked" handler="on_toggle_swan_clicked"/>
+                            <signal name="clicked" handler="on_tog_swan_clicked"/>
                           </widget>
                           <packing>
                             <property name="expand">False</property>
@@ -97,12 +97,12 @@
                           </packing>
                         </child>
                         <child>
-                          <widget class="GtkToggleButton" id="toggle_fvcom">
+                          <widget class="GtkToggleButton" id="tog_fvcom">
                             <property name="label" translatable="yes">Run FVCOM</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
-                            <signal name="clicked" handler="on_toggle_fvcom_clicked"/>
+                            <signal name="clicked" handler="on_tog_fvcom_clicked"/>
                           </widget>
                           <packing>
                             <property name="expand">False</property>
@@ -306,7 +306,78 @@
               <widget class="GtkHBox" id="hbox2">
                 <property name="visible">True</property>
                 <child>
-                  <placeholder/>
+                  <widget class="GtkVBox" id="vbox3">
+                    <property name="visible">True</property>
+                    <property name="border_width">5</property>
+                    <property name="orientation">vertical</property>
+                    <child>
+                      <widget class="GtkToggleButton" id="tog_animation">
+                        <property name="label" translatable="yes">Start Animation</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <signal name="clicked" handler="on_tog_animation_clicked"/>
+                      </widget>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <widget class="GtkHScale" id="hscale">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="adjustment">1 1 150 1 10 10</property>
+                        <property name="digits">0</property>
+                        <property name="draw_value">False</property>
+                        <signal name="value_changed" handler="on_hscale_value_changed"/>
+                      </widget>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <widget class="GtkSpinButton" id="spn_period">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="max_length">3</property>
+                        <property name="invisible_char">&#x2022;</property>
+                        <property name="adjustment">1 1 140 1 10 10</property>
+                        <signal name="value_changed" handler="on_spn_period_value_changed"/>
+                      </widget>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="position">3</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <widget class="GtkHBox" id="hbox3">
+                        <property name="visible">True</property>
+                        <child>
+                          <placeholder/>
+                        </child>
+                        <child>
+                          <placeholder/>
+                        </child>
+                      </widget>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="position">4</property>
+                      </packing>
+                    </child>
+                  </widget>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="position">0</property>
+                  </packing>
                 </child>
                 <child>
                   <widget class="GtkVSeparator" id="vseparator2">
@@ -319,7 +390,12 @@
                   </packing>
                 </child>
                 <child>
-                  <placeholder/>
+                  <widget class="GtkImage" id="img_map">
+                    <property name="visible">True</property>
+                  </widget>
+                  <packing>
+                    <property name="position">2</property>
+                  </packing>
                 </child>
               </widget>
               <packing>

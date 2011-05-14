@@ -10,6 +10,8 @@ from threading import Thread
 import time
 import locale
 import gobject
+import gen_map
+
 
 encoding = locale.getpreferredencoding()
 utf8conv = lambda x : unicode(x, encoding).encode('utf8')
@@ -86,6 +88,7 @@ class win_main(object):
                    'on_but_clear_clicked':self.on_but_clear_clicked,
                    'on_but_settings_clicked':self.on_but_settings_clicked,
                    'on_but_about_clicked':self.on_but_about_clicked,
+                   'on_but_point_clicked':self.on_but_point_clicked,
                    'on_tog_animation_clicked':self.on_tog_animation_clicked,
                    'on_hscale_value_changed':self.on_hscale_value_changed,
                    'on_spn_period_value_changed':self.on_spn_period_value_changed,
@@ -95,9 +98,12 @@ class win_main(object):
         self.glade.signal_autoconnect(signals)
         #self.window = self.builder.get_object('win_main')
         self.img_map = self.glade.get_widget('img_map')
-        self.img_map.set_from_file('/home/hask/FVCOM/1.png')
+        self.img_point = self.glade.get_widget('img_point')
+        self.img_map.set_from_file(cmd[FVCOM][BASE_DIR] + '1.png')
         self.hscale = self.glade.get_widget('hscale')
         self.spn_period = self.glade.get_widget('spn_period')
+        self.spn_x = self.glade.get_widget('spn_x')
+        self.spn_y = self.glade.get_widget('spn_y')
         self.win_main.show_all()
 
     def on_spn_period_value_changed(self, widget):
@@ -107,7 +113,7 @@ class win_main(object):
 
     def update_img(self, index):
         if self.index <> index:
-            self.img_map.set_from_file('/home/hask/FVCOM/' + str(index) + '.png')
+            self.img_map.set_from_file(cmd[FVCOM][BASE_DIR] + str(index) + '.png')
             self.index = index
 
     def animation(self, widget):
@@ -238,6 +244,56 @@ class win_main(object):
             cores_use = cores
             # spn_core.set_value(float(cores)), seems no valuable, 
             # because the window has been destroyed
+
+    def on_but_point_clicked(self, widget):
+        x = self.spn_x.get_value_as_int()
+        y = self.spn_y.get_value_as_int()
+        # time consuming, may block, so do in a thread
+        t = Thread(target=self.certain_point_plot, args=(x, y, cmd[FVCOM][BASE_DIR]))
+        t.start()
+
+    def certain_point_plot(self, x, y, fvcom_dir):
+        x_t = str(x)
+        y_t = str(y)
+        i = 1
+        #if x >= 200 or y >= 200:
+            #print 'Out of range'
+            #sys.exit(1)
+        plot = fvcom_dir + str(x) + '_' + str(y) + '.plot'
+        png  = fvcom_dir + str(x) + '_' + str(y) + '.png'
+        if os.path.exists(png):
+            self.img_point.set_from_file(png)
+            return
+        try:
+            fd_w = open(plot, 'w')
+        except IOError, e:
+            print e
+        # 200 + empty line = 201; start from (0,0)
+        target_bak = (199 - y) * 201 + x + 1
+        while i <= 140:
+            try:
+                fd = open(fvcom_dir + str(i) + '.plot', 'r')
+            except IOError, e:
+                print e
+            target = target_bak
+            while target:
+                line = fd.readline()
+                target -= 1
+            fd_w.write(str(i) + ' ' + line[len(x_t) + len(y_t) + 2:])
+            fd.close()
+
+            #line = fd.readline()
+            #while line:
+                #if line.startswith(x + ' ' + y + ' '):
+                    #fd_w.write(str(i) + ' ' + line[len(x) + len(y) + 2:])
+                    #fd.close()
+                    #break
+                #line = fd.readline()
+            i += 1
+        fd_w.close()
+        gen_map.plot(x, y, plot, png)
+        self.img_point.set_from_file(png)
+
         
 
 ''' Drop sys_cores from config file, count it every running.

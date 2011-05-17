@@ -8,7 +8,7 @@
     <property name="window_position">center</property>
     <property name="default_width">1000</property>
     <property name="default_height">500</property>
-    <property name="icon">hybrid.png</property>
+    <property name="icon">wsf.png</property>
     <signal name="destroy" handler="on_win_main_destroy"/>
     <child>
       <widget class="GtkVBox" id="vbox1">
@@ -34,6 +34,20 @@
                         <property name="spacing">2</property>
                         <property name="layout_style">center</property>
                         <child>
+                          <widget class="GtkButton" id="but_wrf">
+                            <property name="label" translatable="yes">Compile WRF</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <signal name="clicked" handler="on_but_wrf_clicked"/>
+                          </widget>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
                           <widget class="GtkButton" id="but_swan">
                             <property name="label" translatable="yes">Compile SWAN</property>
                             <property name="visible">True</property>
@@ -44,7 +58,7 @@
                           <packing>
                             <property name="expand">False</property>
                             <property name="fill">False</property>
-                            <property name="position">0</property>
+                            <property name="position">1</property>
                           </packing>
                         </child>
                         <child>
@@ -58,7 +72,7 @@
                           <packing>
                             <property name="expand">False</property>
                             <property name="fill">False</property>
-                            <property name="position">1</property>
+                            <property name="position">2</property>
                           </packing>
                         </child>
                       </widget>
@@ -83,6 +97,19 @@
                         <property name="spacing">2</property>
                         <property name="layout_style">center</property>
                         <child>
+                          <widget class="GtkToggleButton" id="tog_wrf">
+                            <property name="label" translatable="yes">Run WRF</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                          </widget>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
                           <widget class="GtkToggleButton" id="tog_swan">
                             <property name="label" translatable="yes">Run SWAN</property>
                             <property name="visible">True</property>
@@ -93,7 +120,7 @@
                           <packing>
                             <property name="expand">False</property>
                             <property name="fill">False</property>
-                            <property name="position">0</property>
+                            <property name="position">1</property>
                           </packing>
                         </child>
                         <child>
@@ -107,7 +134,7 @@
                           <packing>
                             <property name="expand">False</property>
                             <property name="fill">False</property>
-                            <property name="position">1</property>
+                            <property name="position">2</property>
                           </packing>
                         </child>
                       </widget>
@@ -231,7 +258,7 @@
                         <property name="hscrollbar_policy">automatic</property>
                         <property name="vscrollbar_policy">automatic</property>
                         <child>
-                          <widget class="GtkTextView" id="tv_swan">
+                          <widget class="GtkTextView" id="tv_wrf">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="editable">False</property>
@@ -246,7 +273,7 @@
                     <child>
                       <widget class="GtkLabel" id="label5">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">SWAN Outputs</property>
+                        <property name="label" translatable="yes">WRF Outputs</property>
                       </widget>
                       <packing>
                         <property name="position">1</property>
@@ -261,7 +288,7 @@
                         <property name="hscrollbar_policy">automatic</property>
                         <property name="vscrollbar_policy">automatic</property>
                         <child>
-                          <widget class="GtkTextView" id="tv_fvcom">
+                          <widget class="GtkTextView" id="tv_swan">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="editable">False</property>
@@ -276,10 +303,40 @@
                     <child>
                       <widget class="GtkLabel" id="label6">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">FVCOM Outputs</property>
+                        <property name="label" translatable="yes">SWAN Outputs</property>
                       </widget>
                       <packing>
                         <property name="position">2</property>
+                        <property name="tab_fill">False</property>
+                        <property name="type">tab</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <widget class="GtkScrolledWindow" id="scrolledwindow4">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="hscrollbar_policy">automatic</property>
+                        <property name="vscrollbar_policy">automatic</property>
+                        <child>
+                          <widget class="GtkTextView" id="tv_fvcom">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="editable">False</property>
+                            <property name="cursor_visible">False</property>
+                          </widget>
+                        </child>
+                      </widget>
+                      <packing>
+                        <property name="position">3</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <widget class="GtkLabel" id="label7">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">FVCOM Outputs</property>
+                      </widget>
+                      <packing>
+                        <property name="position">3</property>
                         <property name="tab_fill">False</property>
                         <property name="type">tab</property>
                       </packing>
@@ -411,7 +468,7 @@
                       <widget class="GtkHBox" id="hbox4">
                         <property name="visible">True</property>
                         <child>
-                          <widget class="GtkLabel" id="label7">
+                          <widget class="GtkLabel" id="label8">
                             <property name="visible">True</property>
                             <property name="label" translatable="yes">X (0-199)</property>
                           </widget>
@@ -448,7 +505,7 @@
                       <widget class="GtkHBox" id="hbox5">
                         <property name="visible">True</property>
                         <child>
-                          <widget class="GtkLabel" id="label8">
+                          <widget class="GtkLabel" id="label9">
                             <property name="visible">True</property>
                             <property name="label" translatable="yes">Y (0-199)</property>
                           </widget>
@@ -567,7 +624,7 @@
     <property name="program_name">Hybrid</property>
     <property name="version">0.1</property>
     <property name="copyright" translatable="yes">Yang Zhang, NUIST</property>
-    <property name="logo">hybrid.png</property>
+    <property name="logo">wsf.png</property>
     <child internal-child="vbox">
       <widget class="GtkVBox" id="dialog-vbox1">
         <property name="visible">True</property>

@@ -22,7 +22,7 @@ cores_use = cores
 #import getpass
 # getpass.getuser() -> user name
 home = '/home/' + os.environ['USER'] + '/'
-path_conf = home + '.hybridrc'
+path_conf = home + '.wsfrc'
 
 CMP, SWAN, FVCOM = range(3)
 NAME, TEXTVIEW, BASE_DIR, CMP_DIR, RUN_DIR, CMP_CMD, RUN_CMD = range(7)
@@ -73,9 +73,9 @@ cmd = [(
 class win_main(object):        
     def __init__(self):
         #self.builder = gtk.Builder()
-        #self.builder.add_from_file('hybrid2.xml')
+        #self.builder.add_from_file('wsf.xml')
         #self.builder.connect_signals(
-        self.glade = gtk.glade.XML('hybrid2.glade')
+        self.glade = gtk.glade.XML('wsf.glade')
         self.win_main = self.glade.get_widget('win_main')
         self.index = 0 # map img index
         self.run = 1
@@ -206,7 +206,7 @@ class win_main(object):
         buffer.place_cursor(iter_start)
 
     def on_but_settings_clicked(self, widget):
-        glade = gtk.glade.XML('hybrid2.glade')
+        glade = gtk.glade.XML('wsf.glade')
         about = glade.get_widget('dia_settings')
         chk_autorun = glade.get_widget('chk_autorun')
         spn_core = glade.get_widget('spn_core')
@@ -225,7 +225,7 @@ class win_main(object):
 
     def on_but_about_clicked(self, widget):
         # essential, otherwise next time about will be NoneType
-        self.glade = gtk.glade.XML('/home/hask/hybrid/hybrid2.glade')
+        self.glade = gtk.glade.XML('/home/hask/wsf/wsf.glade')
         about = self.glade.get_widget('dia_about')
         about.run()
         about.destroy()
@@ -235,7 +235,7 @@ class win_main(object):
         autorun = chk_autorun.get_active()
         cores_use = spn_core.get_value_as_int()
         if cores_use > cores:
-            glade = gtk.glade.XML('hybrid2.glade')
+            glade = gtk.glade.XML('wsf.glade')
             warning = glade.get_widget('dia_msg_core')
             warning.set_markup('Your system has only ' + str(cores) + ' cores,\n'
                               'which is less than demanded.\nSet to default!')

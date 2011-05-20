@@ -281,19 +281,10 @@ class win_main(object):
                 target -= 1
             fd_w.write(str(i) + ' ' + line[len(x_t) + len(y_t) + 2:])
             fd.close()
-
-            #line = fd.readline()
-            #while line:
-                #if line.startswith(x + ' ' + y + ' '):
-                    #fd_w.write(str(i) + ' ' + line[len(x) + len(y) + 2:])
-                    #fd.close()
-                    #break
-                #line = fd.readline()
             i += 1
         fd_w.close()
         gen_map.plot(x, y, plot, png)
         self.img_point.set_from_file(png)
-
         
 
 ''' Drop sys_cores from config file, count it every running.

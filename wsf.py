@@ -10,7 +10,7 @@ from threading import Thread
 import time
 import locale
 import gobject
-import gen_map
+import gen_plot
 
 
 encoding = locale.getpreferredencoding()

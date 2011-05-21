@@ -46,15 +46,25 @@ if __name__ == '__main__':
     g("set ytics ('0' 0, '" + strs[0] + "' 20, '40' 40, '" + strs[1] + "' 60, \
                   '80' 80, '" + strs[2] + "' 100, '120' 120, '" + strs[3] + "' 140, \
                   '160' 160, '" + strs[4] + "' 180, '200' 199)")
-
     g('set term png size 600,600')
 
-    g("set output '100.png'")
-    g("splot '100.dat' matrix with image")
-    #while i <= 140:
-        #plot = str(i) + '.plot'
-        #png = str(i) + '.png'
-        #g('set output \'' + png + '\'')
-        #g.splot(Gnuplot.File(plot))
-        #i += 1
-
+    day = 1
+    hour = 5
+    def dat2png(i):
+        global day, hour
+        dat = str(i) + '.dat'
+        png = str(i) + '.png'
+        if hour < 10:
+            hourtext = '0' + str(hour) + ':00'
+            hour += 1
+        elif hour < 24:
+            hourtext = str(hour) + ':00'
+            hour += 1
+        else : # hour == 24
+            day += 1
+            hourtext = '00:00'
+            hour = 1
+        g("set title '2010-Oct-" + str(day) + " / " + hourtext + "'")
+        g("set output '" + png + "'")
+        g("splot '" + dat + "' matrix with image")
+    map(dat2png, range(1,141))

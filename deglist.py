@@ -49,8 +49,8 @@ def sec2deglist(sec):
     ## int / int = int; int / float = float
     #return int(round(sec / step))
 
-a = [31, 32, 58]
-b = [30, 55, 40]
+#a = [31, 32, 58]
+#b = [30, 55, 40]
 #a = [120, 36, 10]
 #b = [119, 52, 32]
 

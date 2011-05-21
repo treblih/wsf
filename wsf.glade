@@ -731,13 +731,13 @@
                       </packing>
                     </child>
                     <child>
-                      <widget class="GtkButton" id="but_point">
+                      <widget class="GtkButton" id="but_gen_plot">
                         <property name="label" translatable="yes">Generate Plot</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
                         <property name="border_width">2</property>
-                        <signal name="clicked" handler="on_but_point_clicked"/>
+                        <signal name="clicked" handler="on_but_gen_plot_clicked"/>
                       </widget>
                       <packing>
                         <property name="expand">False</property>

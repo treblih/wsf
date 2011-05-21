@@ -5,14 +5,33 @@ import sys, os
 from numpy import *
 import Gnuplot, Gnuplot.funcutils
 
-def plot(x, y, plot, png):
+def plot(dat, png):
     g = Gnuplot.Gnuplot()
     g('set grid')
     g('set term png size 800,500')
-    g('set output \'' + png + '\'')
-    g('set style data lines')
-    g.plot(Gnuplot.File(plot))
+    g('set output "' + png + '"')
+    #g('set style data lines')
+    g('unset key')
+    g('set xdata time')
+    g('set timefmt "%Y-%b-%d/%H:%M')
+    g('set format x "%d/%H"')
+    g('set xlabel "October - day/hour"')
+    g('set ylabel "mg/L"')
+    g('plot "' + dat + '" u 1:2 w l')
+    #g.plot(Gnuplot.File(dat))
 
+def datestr(day, hour):
+    if hour < 10:
+        hourtext = '0' + str(hour) + ':00'
+        hour += 1
+    elif hour < 24:
+        hourtext = str(hour) + ':00'
+        hour += 1
+    else : # hour == 24
+        day += 1
+        hourtext = '00:00'
+        hour = 1
+    return [day, hour, '2010-Oct-' + str(day) + '/' + hourtext]
 
 if __name__ == '__main__':
     from deglist import *
@@ -54,17 +73,8 @@ if __name__ == '__main__':
         global day, hour
         dat = str(i) + '.dat'
         png = str(i) + '.png'
-        if hour < 10:
-            hourtext = '0' + str(hour) + ':00'
-            hour += 1
-        elif hour < 24:
-            hourtext = str(hour) + ':00'
-            hour += 1
-        else : # hour == 24
-            day += 1
-            hourtext = '00:00'
-            hour = 1
-        g("set title '2010-Oct-" + str(day) + " / " + hourtext + "'")
+        day, hour, datetime = datestr(day, hour)
+        g("set title '" + datetime + "'")
         g("set output '" + png + "'")
         g("splot '" + dat + "' matrix with image")
-    map(dat2png, range(1,141))
+    map(dat2png, range(1, 141))

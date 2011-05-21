@@ -11,6 +11,7 @@ import time
 import locale
 import gobject
 import gen_plot
+from deglist import *
 
 
 encoding = locale.getpreferredencoding()
@@ -69,6 +70,11 @@ cmd = [(
         'mpirun -np ' + str(cores) + ' ../FVCOM_source/fvcom chn',
        ),
       ]
+
+n_start = [30, 55, 40]
+n_end   = [31, 32, 58]
+e_start = [119, 52, 32]
+e_end   = [120, 36, 10]
  
 class win_main(object):        
     def __init__(self):
@@ -88,7 +94,7 @@ class win_main(object):
                    'on_but_clear_clicked':self.on_but_clear_clicked,
                    'on_but_settings_clicked':self.on_but_settings_clicked,
                    'on_but_about_clicked':self.on_but_about_clicked,
-                   'on_but_point_clicked':self.on_but_point_clicked,
+                   'on_but_gen_plot_clicked':self.on_but_gen_plot_clicked,
                    'on_tog_animation_clicked':self.on_tog_animation_clicked,
                    'on_hscale_value_changed':self.on_hscale_value_changed,
                    'on_spn_period_value_changed':self.on_spn_period_value_changed,
@@ -99,11 +105,19 @@ class win_main(object):
         #self.window = self.builder.get_object('win_main')
         self.img_map = self.glade.get_widget('img_map')
         self.img_point = self.glade.get_widget('img_point')
-        self.img_map.set_from_file(cmd[FVCOM][BASE_DIR] + '1.png')
+        self.img_map.set_from_file(cmd[FVCOM][BASE_DIR] + '.concentration/' + '1.png')
         self.hscale = self.glade.get_widget('hscale')
         self.spn_period = self.glade.get_widget('spn_period')
         self.spn_x = self.glade.get_widget('spn_x')
         self.spn_y = self.glade.get_widget('spn_y')
+        self.spn_nd = self.glade.get_widget('spn_nd')
+        self.spn_nm = self.glade.get_widget('spn_nm')
+        self.spn_ns = self.glade.get_widget('spn_ns')
+        self.spn_ed = self.glade.get_widget('spn_ed')
+        self.spn_em = self.glade.get_widget('spn_em')
+        self.spn_es = self.glade.get_widget('spn_es')
+        self.day = 1
+        self.hour = 5
         self.win_main.show_all()
 
     def on_spn_period_value_changed(self, widget):
@@ -113,7 +127,8 @@ class win_main(object):
 
     def update_img(self, index):
         if self.index <> index:
-            self.img_map.set_from_file(cmd[FVCOM][BASE_DIR] + str(index) + '.png')
+            self.img_map.set_from_file(cmd[FVCOM][BASE_DIR] + 
+                        '.concentration/' + str(index) + '.png')
             self.index = index
 
     def animation(self, widget):
@@ -245,45 +260,65 @@ class win_main(object):
             # spn_core.set_value(float(cores)), seems no valuable, 
             # because the window has been destroyed
 
-    def on_but_point_clicked(self, widget):
+    def on_but_gen_plot_clicked(self, widget):
         x = self.spn_x.get_value_as_int()
         y = self.spn_y.get_value_as_int()
+        # new input from longitude & latitude, not coordinates
+        if x == self.spn_x and y == self.spn_y:
+            nd = self.spn_nd.get_value_as_int()
+            nm = self.spn_nm.get_value_as_int()
+            ns = self.spn_ns.get_value_as_int()
+            ed = self.spn_ed.get_value_as_int()
+            em = self.spn_em.get_value_as_int()
+            es = self.spn_es.get_value_as_int()
+            # int / int = int; int / float = float
+            y = int(round(deglist2sec(deglist_minus([nd, nm, ns], n_start)) / 11.0))
+            x = int(round(deglist2sec(deglist_minus([ed, em, es], e_start)) / 13.0))
+            if y < 0: y = 0
+            if x < 0: x = 0
+            self.spn_x.set_value(x)
+            self.spn_y.set_value(y)
+        else : # new input from coordinates
+            nd, nm, ns = deglist_plus(sec2deglist(y * 11), n_start)
+            self.spn_nd.set_value(nd)
+            self.spn_nm.set_value(nm)
+            self.spn_ns.set_value(ns)
+            print nd, nm, ns
+            ed, em, es = deglist_plus(sec2deglist(x * 13), e_start)
+            self.spn_ed.set_value(ed)
+            self.spn_em.set_value(em)
+            self.spn_es.set_value(es)
+            print ed, em, es
+
+        print  x, y, '-'*20
         # time consuming, may block, so do in a thread
-        t = Thread(target=self.certain_point_plot, args=(x, y, cmd[FVCOM][BASE_DIR]))
+        t = Thread(target=self.certain_point_plot, args=(x, y))
         t.start()
 
-    def certain_point_plot(self, x, y, fvcom_dir):
+    def certain_point_plot(self, x, y):
         x_t = str(x)
         y_t = str(y)
-        i = 1
-        #if x >= 200 or y >= 200:
-            #print 'Out of range'
-            #sys.exit(1)
-        plot = fvcom_dir + str(x) + '_' + str(y) + '.plot'
-        png  = fvcom_dir + str(x) + '_' + str(y) + '.png'
+        base = cmd[FVCOM][BASE_DIR] + '.concentration/'
+        dat = base + x_t + '_' + y_t + '.dat'
+        png = base + x_t + '_' + y_t + '.png'
         if os.path.exists(png):
             self.img_point.set_from_file(png)
             return
         try:
-            fd_w = open(plot, 'w')
+            fd_w = open(dat, 'w')
         except IOError, e:
             print e
-        # 200 + empty line = 201; start from (0,0)
-        target_bak = (199 - y) * 201 + x + 1
-        while i <= 140:
-            try:
-                fd = open(fvcom_dir + str(i) + '.plot', 'r')
-            except IOError, e:
-                print e
-            target = target_bak
-            while target:
-                line = fd.readline()
-                target -= 1
-            fd_w.write(str(i) + ' ' + line[len(x_t) + len(y_t) + 2:])
+
+        def out_plot(i):
+            fd = open(base + str(i) + '.dat', 'r')
+            self.day, self.hour, datetime = gen_plot.datestr(self.day, self.hour)
+            fd_w.write(datetime + ' ' + fd.readlines()[y].split()[x] + '\n')
             fd.close()
-            i += 1
+        map(out_plot, range(1, 141))
+        self.day = 1
+        self.hour = 5
         fd_w.close()
-        gen_map.plot(x, y, plot, png)
+        gen_plot.plot(dat, png)
         self.img_point.set_from_file(png)
         
 

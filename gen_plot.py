@@ -5,7 +5,12 @@ import sys, os
 from numpy import *
 import Gnuplot, Gnuplot.funcutils
 
-def plot(dat, png):
+def plot(dat, png, e, n):
+    # /home/hask/FVCOM/.concentration/100_100.dat ->
+    # 100_100.dat -> 100_100  -> [100, 100]
+    x, y = os.path.split(dat)[1].split('.')[0].split('_')
+    e = str(e[0]) + '°' + str(e[1]) + '′' + str(e[2]) + '″'
+    n = str(n[0]) + '°' + str(n[1]) + '′' + str(n[2]) + '″'
     g = Gnuplot.Gnuplot()
     g('set grid')
     g('set term png size 800,500')
@@ -17,6 +22,7 @@ def plot(dat, png):
     g('set format x "%d/%H"')
     g('set xlabel "October - day/hour"')
     g('set ylabel "mg/L"')
+    g('set title "(' + x + ', ' + y + ')   N ' + n + '   E ' + e + '"')
     g('plot "' + dat + '" u 1:2 w l')
     #g.plot(Gnuplot.File(dat))
 

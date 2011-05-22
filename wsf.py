@@ -13,7 +13,6 @@ import gobject
 import gen_plot
 from deglist import *
 
-
 encoding = locale.getpreferredencoding()
 utf8conv = lambda x : unicode(x, encoding).encode('utf8')
 
@@ -25,7 +24,7 @@ cores_use = cores
 home = '/home/' + os.environ['USER'] + '/'
 path_conf = home + '.wsfrc'
 
-CMP, SWAN, FVCOM = range(3)
+CMP, WRF, SWAN, FVCOM = range(4)
 NAME, TEXTVIEW, BASE_DIR, CMP_DIR, RUN_DIR, CMP_CMD, RUN_CMD = range(7)
 cmd = [(
         '', 
@@ -36,15 +35,15 @@ cmd = [(
         '',
         '',
        ),
-       #(
-        #'WRF', 
-        #'tv_wrf', 
-        #home+'wrf/', 
-        #home+'wrf/', 
-        #home+'wrf/',
-        #'',
-        #'',
-       #), 
+       (
+        'WRF', 
+        'tv_wrf', 
+        home+'wrf/', 
+        home+'wrf/', 
+        home+'wrf/',
+        '',
+        '',
+       ), 
        ##################################
        ### no wrf now, change INDEX
        ##################################
@@ -108,8 +107,11 @@ class win_main(object):
         self.img_map.set_from_file(cmd[FVCOM][BASE_DIR] + '.concentration/' + '1.png')
         self.hscale = self.glade.get_widget('hscale')
         self.spn_period = self.glade.get_widget('spn_period')
-        self.spn_x = self.glade.get_widget('spn_x')
+        self.spn_frame = self.glade.get_widget('spn_frame')
         self.spn_y = self.glade.get_widget('spn_y')
+        self.spn_x = self.glade.get_widget('spn_x')
+        self.spn_y_val = self.spn_y.get_value_as_int()
+        self.spn_x_val = self.spn_x.get_value_as_int()
         self.spn_nd = self.glade.get_widget('spn_nd')
         self.spn_nm = self.glade.get_widget('spn_nm')
         self.spn_ns = self.glade.get_widget('spn_ns')
@@ -133,11 +135,13 @@ class win_main(object):
 
     def animation(self, widget):
         index = self.index
+        frame = self.spn_frame.get_value_as_int()
+        sec = 1.0 / frame
         while index <= 140:
             self.update_img(index)
             self.hscale.set_value(index)
             self.spn_period.set_value(index)
-            time.sleep(0.1)
+            time.sleep(sec)
             index += 1
         widget.set_label('Start Animation')
         widget.set_active(False)
@@ -264,7 +268,8 @@ class win_main(object):
         x = self.spn_x.get_value_as_int()
         y = self.spn_y.get_value_as_int()
         # new input from longitude & latitude, not coordinates
-        if x == self.spn_x and y == self.spn_y:
+        if x == self.spn_x_val and y == self.spn_y_val:
+            print 'wakakk'
             nd = self.spn_nd.get_value_as_int()
             nm = self.spn_nm.get_value_as_int()
             ns = self.spn_ns.get_value_as_int()
@@ -274,10 +279,15 @@ class win_main(object):
             # int / int = int; int / float = float
             y = int(round(deglist2sec(deglist_minus([nd, nm, ns], n_start)) / 11.0))
             x = int(round(deglist2sec(deglist_minus([ed, em, es], e_start)) / 13.0))
+            print x, y
             if y < 0: y = 0
             if x < 0: x = 0
-            self.spn_x.set_value(x)
+            if y > 199: y = 199
+            if x > 199: x = 199
             self.spn_y.set_value(y)
+            self.spn_x.set_value(x)
+            self.spn_y_val = y
+            self.spn_x_val = x
         else : # new input from coordinates
             nd, nm, ns = deglist_plus(sec2deglist(y * 11), n_start)
             self.spn_nd.set_value(nd)
@@ -292,12 +302,14 @@ class win_main(object):
 
         print  x, y, '-'*20
         # time consuming, may block, so do in a thread
-        t = Thread(target=self.certain_point_plot, args=(x, y))
+        t = Thread(target=self.certain_point_plot, 
+                   args=(x, y, [ed, em, es], [nd, nm, ns]))
         t.start()
 
-    def certain_point_plot(self, x, y):
+    def certain_point_plot(self, x, y, e, n):
         x_t = str(x)
         y_t = str(y)
+        print x, y, '*'*20
         base = cmd[FVCOM][BASE_DIR] + '.concentration/'
         dat = base + x_t + '_' + y_t + '.dat'
         png = base + x_t + '_' + y_t + '.png'
@@ -318,7 +330,7 @@ class win_main(object):
         self.day = 1
         self.hour = 5
         fd_w.close()
-        gen_plot.plot(dat, png)
+        gen_plot.plot(dat, png, e, n)
         self.img_point.set_from_file(png)
         
 
@@ -326,7 +338,7 @@ class win_main(object):
     for the sake of miss-manipulation. '''
 conf_str = \
 '''autorun=True
-swan_dir_path='''   + cmd[SWAN][BASE_DIR]  + '''
+swan_dir_path='''  + cmd[SWAN][BASE_DIR]  + '''
 fvcom_dir_path=''' + cmd[FVCOM][BASE_DIR] + '''
 '''
  

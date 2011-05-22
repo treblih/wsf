@@ -131,8 +131,8 @@ class win_main(object):
         self.spn_frame = self.glade.get_widget('spn_frame')
         self.spn_y = self.glade.get_widget('spn_y')
         self.spn_x = self.glade.get_widget('spn_x')
-        self.spn_y_val = self.spn_y.get_value_as_int()
-        self.spn_x_val = self.spn_x.get_value_as_int()
+        self.spn_y_last = self.spn_y.get_value_as_int()
+        self.spn_x_last = self.spn_x.get_value_as_int()
         self.spn_nd = self.glade.get_widget('spn_nd')
         self.spn_nm = self.glade.get_widget('spn_nm')
         self.spn_ns = self.glade.get_widget('spn_ns')
@@ -318,8 +318,11 @@ class win_main(object):
     def on_but_gen_plot_clicked(self, widget):
         x = self.spn_x.get_value_as_int()
         y = self.spn_y.get_value_as_int()
+        print '======', x, y
+        print '======', self.spn_x_last, self.spn_y_last
         # new input from longitude & latitude, not coordinates
-        if x == self.spn_x_val and y == self.spn_y_val:
+        if x == self.spn_x_last and y == self.spn_y_last:
+            print 'longitude'
             nd = self.spn_nd.get_value_as_int()
             nm = self.spn_nm.get_value_as_int()
             ns = self.spn_ns.get_value_as_int()
@@ -337,9 +340,10 @@ class win_main(object):
             if x > 199: x = 199
             self.spn_y.set_value(y)
             self.spn_x.set_value(x)
-            self.spn_y_val = y
-            self.spn_x_val = x
+            self.spn_y_last = y
+            self.spn_x_last = x
         else : # new input from coordinates
+            print 'coordinates'
             nd, nm, ns = deglist_plus(sec2deglist(y * 11), n_start)
             self.spn_nd.set_value(nd)
             self.spn_nm.set_value(nm)
@@ -350,8 +354,9 @@ class win_main(object):
             self.spn_em.set_value(em)
             self.spn_es.set_value(es)
             print ed, em, es
+            self.spn_y_last = y
+            self.spn_x_last = x
 
-        print  x, y, '-'*20
         # time consuming, may block, so do in a thread
         t = Thread(target=self.certain_point_plot, 
                    args=(x, y, [ed, em, es], [nd, nm, ns]))

@@ -76,51 +76,58 @@ e_start = [119, 52, 32]
 e_end   = [120, 36, 10]
 
 class cmd_thread(Thread):
-    def __init__(self, widget, which, textview, base_dir=''):
-        self.widget = widget
-        self.which = which
-        self.textview = textview
-        self.base_dir = base_dir
+    #def __init__(self, target=None, widget, which=None, textview=None, base_dir=''):
+    def __init__(self, target=None, args=()):
+        self.target = target
+        #self.widget = widget
+        #self.which = which
+        #self.textview = textview
+        #self.base_dir = base_dir
+        self.args = args
         self.stopevent = Event()
         Thread.__init__(self)
 
     def run(self):
-        buffer = self.textview.get_buffer()
-        log = ''
-        f_log = None
-        if self.base_dir:
-            p = Popen(self.which[RUN_CMD], shell=True, stdout=PIPE, 
-                      stderr=STDOUT, cwd=self.which[RUN_DIR])
-            # Sun Apr 24 19:06:25 2011 -> Apr_24_19:06:25_2011.log
-            log = self.base_dir + time.asctime()[4:].replace(' ', '_') + '.log'
-            f_log = open(log, 'w')
-        else:
-            p = Popen(self.which[CMP_CMD], shell=True, stdout=PIPE, 
-                      stderr=STDOUT, cwd=self.which[CMP_DIR])
-        while 1:
-            line = p.stdout.readline()
-            if not line or self.stopevent.isSet():
-                break
-            gtk.gdk.threads_enter()
-            if f_log:
-                f_log.write(line)
-            iter = buffer.get_end_iter()
-            buffer.place_cursor(iter)
-            buffer.insert(iter, utf8conv(line))
-            self.textview.scroll_to_mark(buffer.get_insert(), 0.1)
-            #self.stopevent.wait(1.0)
-            gtk.gdk.threads_leave()
-        if self.base_dir:
-            f_log.close()
-            self.widget.set_label('Run ' + self.which[NAME])
-            # it's False, not True
-            self.widget.set_active(False)
-        else:
-            self.widget.set_sensitive(True)
+        self.target(self.widget, self.which, self.textview, 
+                  self.base_dir, self.stopevent)
 
     def join(self, timeout=None):
         self.stopevent.set()
         Thread.join(self, timeout)
+
+def mod_run(widget, which, textview, base_dir, stopevent):
+    buffer = textview.get_buffer()
+    log = ''
+    f_log = None
+    if base_dir:
+        p = Popen(which[RUN_CMD], shell=True, stdout=PIPE, 
+                  stderr=STDOUT, cwd=which[RUN_DIR])
+        # Sun Apr 24 19:06:25 2011 -> Apr_24_19:06:25_2011.log
+        log = base_dir + time.asctime()[4:].replace(' ', '_') + '.log'
+        f_log = open(log, 'w')
+    else:
+        p = Popen(which[CMP_CMD], shell=True, stdout=PIPE, 
+                  stderr=STDOUT, cwd=which[CMP_DIR])
+    while 1:
+        line = p.stdout.readline()
+        if not line or stopevent.isSet():
+            break
+        gtk.gdk.threads_enter()
+        if f_log:
+            f_log.write(line)
+        iter = buffer.get_end_iter()
+        buffer.place_cursor(iter)
+        buffer.insert(iter, utf8conv(line))
+        textview.scroll_to_mark(buffer.get_insert(), 0.1)
+        #stopevent.wait(1.0)
+        gtk.gdk.threads_leave()
+    if base_dir:
+        f_log.close()
+        widget.set_label('Run ' + which[NAME])
+        # it's False, not True
+        widget.set_active(False)
+    else:
+        widget.set_sensitive(True)
 
  
 class win_main(object):        
@@ -185,7 +192,7 @@ class win_main(object):
     def on_but_cmd_clicked(self, widget, which):
         widget.set_sensitive(False)
         print which
-        cmp = cmd_thread(widget, which, 
+        cmp = cmd_thread(mod_run, widget, which, 
                          self.glade.get_widget('tv_cmp'))
         cmp.daemon = True
         cmp.start()
@@ -193,15 +200,15 @@ class win_main(object):
     def on_tog_cmd_clicked(self, widget, which):
         if widget.get_active():
             widget.set_label('Stop ' + which[NAME])
-            #self.run_t = Thread(target=self.redirect_to_textbuffer, 
+            #self.mod_t = Thread(target=self.redirect_to_textbuffer, 
                          #args=(widget, which, which[TEXTVIEW], which[BASE_DIR]))
-            self.run_t = cmd_thread(widget, which, 
+            self.mod_t = cmd_thread(mod_run, widget, which, 
                                     self.glade.get_widget(which[TEXTVIEW]), 
                                     which[BASE_DIR])
-            self.run_t.daemon = True
-            self.run_t.start()
+            self.mod_t.daemon = True
+            self.mod_t.start()
         else:
-            self.run_t.join()
+            self.mod_t.join()
 
     def on_but_clear_clicked(self, widget):
         nb_outputs = self.glade.get_widget('nb_outputs')
@@ -283,10 +290,12 @@ class win_main(object):
             widget.set_label('Stop Animation')
             # significant, (widget, ) not widget, 
             # otherwise animation() get gtk.Label, not gtk.ToggleButton
-            t = Thread(target=self.animation, args=(widget,))
-            t.start()
+            #t = Thread(target=self.animation, args=(widget,))
+            self.animation_t = cmd_thread(self.animation, widget)
+            self.animation_t.daemon = True
+            self.animation_t.start()
         else:
-            pass
+            self.animation_t.join()
 
     def on_hscale_value_changed(self, widget):
         # hscale doesn't have get_value_as_int()

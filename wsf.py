@@ -12,6 +12,7 @@ import time
 import locale
 import signal
 import gobject
+import ConfigParser
 
 # from wsf
 import gen_plot
@@ -20,13 +21,11 @@ from deglist import *
 encoding = locale.getpreferredencoding()
 utf8conv = lambda x : unicode(x, encoding).encode('utf8')
 
-autorun = True
-cores = os.sysconf('SC_NPROCESSORS_CONF')
-cores_use = cores
 #import getpass
 # getpass.getuser() -> user name
 home = '/home/' + os.environ['USER'] + '/'
 path_conf = home + '.wsfrc'
+periods = 139
 
 CMP, WRF, SWAN, FVCOM = range(4)
 NAME, TEXTVIEW, BASE_DIR, CMP_DIR, RUN_DIR, CMP_CMD, RUN_CMD = range(7)
@@ -76,11 +75,12 @@ n_end   = [31, 32, 58]
 e_start = [119, 52, 32]
 e_end   = [120, 36, 10]
 
-class cmd_thread(Thread):
+from threading import Thread, Event, current_thread, _MainThread
+
+class event_thread(Thread):
     def __init__(self, target, args):
         self.stopevent = Event()
         Thread.__init__(self, target=target, args=(self.stopevent, ).__add__(args))
-
     def join(self, timeout=None):
         self.stopevent.set()
         Thread.join(self, timeout)
@@ -125,7 +125,7 @@ class win_main(object):
         self.glade.signal_autoconnect(signals)
         self.img_map = self.glade.get_widget('img_map')
         self.img_point = self.glade.get_widget('img_point')
-        self.img_map.set_from_file(cmd[FVCOM][BASE_DIR] + '.concentration/' + '1.png')
+        self.img_map.set_from_file(cmd[FVCOM][BASE_DIR] + '.mix_depth/' + '1.png')
         self.hscale = self.glade.get_widget('hscale')
         self.spn_period = self.glade.get_widget('spn_period')
         self.spn_frame = self.glade.get_widget('spn_frame')
@@ -185,7 +185,7 @@ class win_main(object):
 
     def on_but_cmd_clicked(self, widget, which):
         widget.set_sensitive(False)
-        cmp = cmd_thread(target=self.mod_run, 
+        cmp = event_thread(target=self.mod_run, 
                          args=(widget, which))
         cmp.daemon = True
         cmp.start()
@@ -193,7 +193,7 @@ class win_main(object):
     def on_tog_cmd_clicked(self, widget, which):
         if widget.get_active():
             widget.set_label('Stop ' + which[NAME])
-            self.mod_t = cmd_thread(target=self.mod_run, 
+            self.mod_t = event_thread(target=self.mod_run, 
                                     args=(widget, which, 
                                     which[TEXTVIEW],
                                     which[BASE_DIR]))
@@ -218,12 +218,15 @@ class win_main(object):
         about = glade.get_widget('dia_settings')
         chk_autorun = glade.get_widget('chk_autorun')
         spn_core = glade.get_widget('spn_core')
+        ent_wrf = glade.get_widget('ent_wrf')
         ent_swan = glade.get_widget('ent_swan')
         ent_fvcom = glade.get_widget('ent_fvcom')
         cancel = glade.get_widget('but_set_cancel')
         ok = glade.get_widget('but_set_ok')
         chk_autorun.set_active(autorun)
         spn_core.set_value(cores)
+        ent_wrf.set_text(cmd[WRF][BASE_DIR])
+        ent_fvcom.set_text(cmd[FVCOM][BASE_DIR])
         ent_swan.set_text(cmd[SWAN][BASE_DIR])
         ent_fvcom.set_text(cmd[FVCOM][BASE_DIR])
         ok.connect('clicked', self.settings_ok, 
@@ -262,15 +265,15 @@ class win_main(object):
     def update_img(self, index):
         if self.index <> index:
             self.img_map.set_from_file(cmd[FVCOM][BASE_DIR] + 
-                        '.concentration/' + str(index) + '.png')
+                        '.mix_depth/' + str(index) + '.png')
             self.index = index
 
     def animation(self, stopevent, widget):
         index = self.index
         frame = self.spn_frame.get_value_as_int()
         sec = 1.0 / frame
-        while index <= 140 and not stopevent.isSet():
-        #while index <= 140:
+        while index <= periods and not stopevent.isSet():
+        #while index <= periods:
             self.update_img(index)
             self.hscale.set_value(index)
             self.spn_period.set_value(index)
@@ -285,12 +288,12 @@ class win_main(object):
             # significant, (widget, ) not widget, 
             # otherwise animation() get gtk.Label, not gtk.ToggleButton
             #self.animation_t = Thread(target=self.animation, args=(widget,))
-            self.animation_t = cmd_thread(target=self.animation, args=(widget, ))
+            self.animation_t = event_thread(target=self.animation, args=(widget, ))
             self.animation_t.daemon = True
             self.animation_t.start()
         else:
             # when clicked,     <class 'threading._MainThread'>
-            # when set_actived, <class '__main__.cmd_thread'>
+            # when set_actived, <class '__main__.event_thread'>
             #print type(current_thread())
             # always be <class '__main__.win_main'>
             #print type(self)
@@ -365,7 +368,7 @@ class win_main(object):
     def certain_point_plot(self, x, y, e, n):
         x_t = str(x)
         y_t = str(y)
-        base = cmd[FVCOM][BASE_DIR] + '.concentration/'
+        base = cmd[FVCOM][BASE_DIR] + '.mix_depth/'
         dat = base + x_t + '_' + y_t + '.dat'
         png = base + x_t + '_' + y_t + '.png'
         if os.path.exists(png):
@@ -374,6 +377,7 @@ class win_main(object):
         try:
             fd_w = open(dat, 'w')
         except IOError, e:
+            fd_w.close()
             print e
 
         def out_plot(i):
@@ -381,7 +385,7 @@ class win_main(object):
             self.day, self.hour, datetime = gen_plot.datestr(self.day, self.hour)
             fd_w.write(datetime + ' ' + fd.readlines()[y].split()[x] + '\n')
             fd.close()
-        map(out_plot, range(1, 141))
+        map(out_plot, range(1, periods + 1))
         self.day = 1
         self.hour = 5
         fd_w.close()
@@ -392,24 +396,42 @@ class win_main(object):
 ''' Drop sys_cores from config file, count it every running.
     for the sake of miss-manipulation. '''
 conf_str = \
-'''autorun=True
-swan_dir_path='''  + cmd[SWAN][BASE_DIR]  + '''
-fvcom_dir_path=''' + cmd[FVCOM][BASE_DIR] + '''
+'''[global]
+autorun=True
+cores_use=1
+[path]
+wrf='''   + cmd[WRF][BASE_DIR]   + '''
+swan='''  + cmd[SWAN][BASE_DIR]  + '''
+fvcom=''' + cmd[FVCOM][BASE_DIR] + '''
 '''
+
+def config_valid():
+    cores = os.sysconf('SC_NPROCESSORS_CONF')
+    if cores < cores_use:
+
+
  
 if __name__ == '__main__':
     gobject.threads_init()
     gtk.gdk.threads_init()
-    #if os.path.exists(path_conf):
-        #f = open(path)
-    #else:
-        #f = open(path_conf, 'w')
-        #f.write(conf_str)
-        #sys.exit(1)
+    if not os.path.exists(path_conf):
+        try:
+            f = open(path_conf, 'w')
+        except e:
+            f.close()
+            print e
+            sys.exit(1)
+        f.write(conf_str)
+    # now we have .wsfrc
+    cp = ConfigParser.ConfigParser()
+    cp.read(home + '.wsfrc')
+
+    autorun = cp.get('global', 'autorun')
+    cores_use = cp.get('global', 'cores_use')
+    cmd[WRF][BASE_DIR] = cp.get('path', 'wrf')
+    cmd[SWAN][BASE_DIR] = cp.get('path', 'swan')
+    cmd[FVCOM][BASE_DIR] = cp.get('path', 'fvcom')
+    config_valid()
+
     app = win_main()
     gtk.main()
-
-# TODO:
-#   wrf
-#   config file
-#   self.run is global

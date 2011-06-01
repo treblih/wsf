@@ -386,7 +386,7 @@
                       <widget class="GtkHScale" id="hscale">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
-                        <property name="adjustment">1 1 150 1 10 10</property>
+                        <property name="adjustment">1 1 126 1 10 10</property>
                         <property name="digits">0</property>
                         <property name="draw_value">False</property>
                         <signal name="value_changed" handler="on_hscale_value_changed"/>
@@ -416,7 +416,7 @@
                             <property name="can_focus">True</property>
                             <property name="max_length">3</property>
                             <property name="invisible_char">&#x2022;</property>
-                            <property name="adjustment">1 1 140 1 10 10</property>
+                            <property name="adjustment">1 1 116 1 10 10</property>
                             <signal name="value_changed" handler="on_spn_period_value_changed"/>
                           </widget>
                           <packing>
@@ -910,26 +910,6 @@
             <property name="row_spacing">50</property>
             <property name="homogeneous">True</property>
             <child>
-              <widget class="GtkLabel" id="lab_fvcom">
-                <property name="visible">True</property>
-                <property name="label" translatable="yes">FVCOM Default Path</property>
-              </widget>
-              <packing>
-                <property name="top_attach">3</property>
-                <property name="bottom_attach">4</property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkLabel" id="lab_swan">
-                <property name="visible">True</property>
-                <property name="label" translatable="yes">SWAN Default Path</property>
-              </widget>
-              <packing>
-                <property name="top_attach">2</property>
-                <property name="bottom_attach">3</property>
-              </packing>
-            </child>
-            <child>
               <widget class="GtkLabel" id="lab_core">
                 <property name="visible">True</property>
                 <property name="label" translatable="yes">Core to Use</property>
@@ -975,7 +955,17 @@
               </packing>
             </child>
             <child>
-              <widget class="GtkEntry" id="ent_swan">
+              <widget class="GtkLabel" id="lab_fvcom">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes">FVCOM Default Path</property>
+              </widget>
+              <packing>
+                <property name="top_attach">4</property>
+                <property name="bottom_attach">5</property>
+              </packing>
+            </child>
+            <child>
+              <widget class="GtkEntry" id="ent_fvcom">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="invisible_char">&#x2022;</property>
@@ -983,12 +973,12 @@
               <packing>
                 <property name="left_attach">1</property>
                 <property name="right_attach">2</property>
-                <property name="top_attach">2</property>
-                <property name="bottom_attach">3</property>
+                <property name="top_attach">4</property>
+                <property name="bottom_attach">5</property>
               </packing>
             </child>
             <child>
-              <widget class="GtkEntry" id="ent_fvcom">
+              <widget class="GtkEntry" id="ent_swan">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="invisible_char">&#x2022;</property>
@@ -1007,10 +997,37 @@
               <placeholder/>
             </child>
             <child>
-              <placeholder/>
+              <widget class="GtkLabel" id="lab_swan">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes">SWAN Default Path</property>
+              </widget>
+              <packing>
+                <property name="top_attach">3</property>
+                <property name="bottom_attach">4</property>
+              </packing>
             </child>
             <child>
-              <placeholder/>
+              <widget class="GtkLabel" id="lab_wrf">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes">WRF Default Path</property>
+              </widget>
+              <packing>
+                <property name="top_attach">2</property>
+                <property name="bottom_attach">3</property>
+              </packing>
+            </child>
+            <child>
+              <widget class="GtkEntry" id="ent_wrf">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="invisible_char">&#x2022;</property>
+              </widget>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="right_attach">2</property>
+                <property name="top_attach">2</property>
+                <property name="bottom_attach">3</property>
+              </packing>
             </child>
           </widget>
           <packing>

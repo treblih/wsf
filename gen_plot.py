@@ -49,8 +49,9 @@ if __name__ == '__main__':
         else :
             return ''
         return str(deglist[0]) + '°' + str(deglist[1]) + '′' + str(deglist[2]) + '″'
+    periods = 139
 
-    os.chdir('/home/hask/FVCOM/.concentration/')
+    os.chdir('/home/hask/FVCOM/.mix_depth/')
     i = 1
     g = Gnuplot.Gnuplot()
     g('set view map')
@@ -83,4 +84,4 @@ if __name__ == '__main__':
         g("set title '" + datetime + "'")
         g("set output '" + png + "'")
         g("splot '" + dat + "' matrix with image")
-    map(dat2png, range(1, 141))
+    map(dat2png, range(1, periods + 1))

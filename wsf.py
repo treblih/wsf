@@ -6,6 +6,7 @@ pygtk.require('2.0')
 import gtk
 import gtk.glade
 import os
+import sys
 from subprocess import *
 from threading import Thread, Event, current_thread, _MainThread
 import time
@@ -29,7 +30,7 @@ periods = 139
 
 CMP, WRF, SWAN, FVCOM = range(4)
 NAME, TEXTVIEW, BASE_DIR, CMP_DIR, RUN_DIR, CMP_CMD, RUN_CMD = range(7)
-cmd = [(
+cmd = [[
         '', 
         'tv_cmp',
         '',
@@ -37,8 +38,8 @@ cmd = [(
         '',
         '',
         '',
-       ),
-       (
+       ],
+       [
         'WRF', 
         'tv_wrf', 
         home+'wrf/', 
@@ -46,8 +47,8 @@ cmd = [(
         home+'wrf/',
         '',
         '',
-       ), 
-       (
+       ], 
+       [
         'SWAN', 
         'tv_swan',
         home+'swan/', 
@@ -58,16 +59,16 @@ cmd = [(
         #'ping yahoo.com -c 15',
         #'cat /home/hask/share/txt/*',
         '',
-       ),
-       (
+       ],
+       [
         'FVCOM', 
         'tv_fvcom', 
         home+'FVCOM/', 
         home+'FVCOM/FVCOM_source/', 
         home+'FVCOM/run/',
         'make clean && make',
-        'mpirun -np ' + str(cores) + ' ../FVCOM_source/fvcom chn',
-       ),
+        'mpirun -np 1 ../FVCOM_source/fvcom chn',
+       ],
       ]
 
 n_start = [30, 55, 40]
@@ -150,8 +151,9 @@ class win_main(object):
         log = ''
         f_log = None
         if base_dir:
-            p = Popen(which[RUN_CMD], shell=True, stdout=PIPE, 
-                      stderr=STDOUT, cwd=which[RUN_DIR])
+            # mpirun -np 1 ... -> mpirun -np cores_use
+            p = Popen(which[RUN_CMD].replace('1', str(cores_use), 1), 
+                      shell=True, stdout=PIPE, stderr=STDOUT, cwd=which[RUN_DIR])
             # Sun Apr 24 19:06:25 2011 -> Apr_24_19:06:25_2011.log
             log = base_dir + time.asctime()[4:].replace(' ', '_') + '.log'
             f_log = open(log, 'w')
@@ -399,6 +401,7 @@ conf_str = \
 '''[global]
 autorun=True
 cores_use=1
+
 [path]
 wrf='''   + cmd[WRF][BASE_DIR]   + '''
 swan='''  + cmd[SWAN][BASE_DIR]  + '''
@@ -406,9 +409,17 @@ fvcom=''' + cmd[FVCOM][BASE_DIR] + '''
 '''
 
 def config_valid():
+    global cores_use
     cores = os.sysconf('SC_NPROCESSORS_CONF')
     if cores < cores_use:
-
+        print 'You set cores to %d, but the system only has %d' % (cores_use, cores)
+        cores_use = cores
+    def path_check(path):
+        if not os.path.isdir(path):
+            print "%s doesn't exist, please check ~/.wrfrc" % path
+            sys.exit(1)
+    [path_check(path) for path in 
+     cmd[WRF][BASE_DIR], cmd[SWAN][BASE_DIR], cmd[FVCOM][BASE_DIR]]
 
  
 if __name__ == '__main__':
@@ -425,9 +436,8 @@ if __name__ == '__main__':
     # now we have .wsfrc
     cp = ConfigParser.ConfigParser()
     cp.read(home + '.wsfrc')
-
-    autorun = cp.get('global', 'autorun')
-    cores_use = cp.get('global', 'cores_use')
+    autorun = cp.getboolean('global', 'autorun')
+    cores_use = cp.getint('global', 'cores_use')
     cmd[WRF][BASE_DIR] = cp.get('path', 'wrf')
     cmd[SWAN][BASE_DIR] = cp.get('path', 'swan')
     cmd[FVCOM][BASE_DIR] = cp.get('path', 'fvcom')

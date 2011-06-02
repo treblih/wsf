@@ -4,17 +4,17 @@ import os
 import sys
 import glob
 
-periods = 140
+periods = 117
 
 if __name__ == '__main__':
-    if not os.path.isdir('/home/hask/FVCOM/.mix_depth'):
-        os.mkdir('/home/hask/FVCOM/.mix_depth')
-    os.chdir('/home/hask/FVCOM/.mix_depth')
+    if not os.path.isdir('/home/hask/FVCOM/.concentration'):
+        os.mkdir('/home/hask/FVCOM/.concentration')
+    os.chdir('/home/hask/FVCOM/.concentration')
 
     filename = 1
     tmp = []
     try:
-        fd = open('/home/hask/MIX_DEPTH.DAT', 'r')
+        fd = open('/home/hask/CONCENTRATION.DAT', 'r')
     except IOError, e:
         print e
         sys.exit(1)

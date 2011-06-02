@@ -26,7 +26,8 @@ utf8conv = lambda x : unicode(x, encoding).encode('utf8')
 # getpass.getuser() -> user name
 home = '/home/' + os.environ['USER'] + '/'
 path_conf = home + '.wsfrc'
-periods = 139
+cores = os.sysconf('SC_NPROCESSORS_CONF')
+periods = 116
 
 CMP, WRF, SWAN, FVCOM = range(4)
 NAME, TEXTVIEW, BASE_DIR, CMP_DIR, RUN_DIR, CMP_CMD, RUN_CMD = range(7)
@@ -126,7 +127,7 @@ class win_main(object):
         self.glade.signal_autoconnect(signals)
         self.img_map = self.glade.get_widget('img_map')
         self.img_point = self.glade.get_widget('img_point')
-        self.img_map.set_from_file(cmd[FVCOM][BASE_DIR] + '.mix_depth/' + '1.png')
+        self.img_map.set_from_file(cmd[FVCOM][BASE_DIR] + '.concentration/' + '1.png')
         self.hscale = self.glade.get_widget('hscale')
         self.spn_period = self.glade.get_widget('spn_period')
         self.spn_frame = self.glade.get_widget('spn_frame')
@@ -177,6 +178,9 @@ class win_main(object):
             view.scroll_to_mark(buffer.get_insert(), 0.1)
             #stopevent.wait(1.0)
             gtk.gdk.threads_leave()
+        # return 0 (normal exit) or -9 (SIGKILL)
+        # otherwise it'll be defunct
+        p.wait()
         if base_dir:
             f_log.close()
             widget.set_label('Run ' + which[NAME])
@@ -247,7 +251,7 @@ class win_main(object):
         global autorun, cores_use
         autorun = chk_autorun.get_active()
         cores_use = spn_core.get_value_as_int()
-        if cores_use > cores:
+        if cores < cores_use:
             glade = gtk.glade.XML('wsf.glade')
             warning = glade.get_widget('dia_msg_core')
             warning.set_markup('Your system has only ' + str(cores) + ' cores,\n'
@@ -267,7 +271,7 @@ class win_main(object):
     def update_img(self, index):
         if self.index <> index:
             self.img_map.set_from_file(cmd[FVCOM][BASE_DIR] + 
-                        '.mix_depth/' + str(index) + '.png')
+                        '.concentration/' + str(index) + '.png')
             self.index = index
 
     def animation(self, stopevent, widget):
@@ -370,7 +374,7 @@ class win_main(object):
     def certain_point_plot(self, x, y, e, n):
         x_t = str(x)
         y_t = str(y)
-        base = cmd[FVCOM][BASE_DIR] + '.mix_depth/'
+        base = cmd[FVCOM][BASE_DIR] + '.concentration/'
         dat = base + x_t + '_' + y_t + '.dat'
         png = base + x_t + '_' + y_t + '.png'
         if os.path.exists(png):
@@ -410,7 +414,6 @@ fvcom=''' + cmd[FVCOM][BASE_DIR] + '''
 
 def config_valid():
     global cores_use
-    cores = os.sysconf('SC_NPROCESSORS_CONF')
     if cores < cores_use:
         print 'You set cores to %d, but the system only has %d' % (cores_use, cores)
         cores_use = cores
@@ -433,6 +436,7 @@ if __name__ == '__main__':
             print e
             sys.exit(1)
         f.write(conf_str)
+        f.close()
     # now we have .wsfrc
     cp = ConfigParser.ConfigParser()
     cp.read(home + '.wsfrc')

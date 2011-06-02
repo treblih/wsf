@@ -49,9 +49,9 @@ if __name__ == '__main__':
         else :
             return ''
         return str(deglist[0]) + '°' + str(deglist[1]) + '′' + str(deglist[2]) + '″'
-    periods = 139
+    periods = 116
 
-    os.chdir('/home/hask/FVCOM/.mix_depth/')
+    os.chdir('/home/hask/FVCOM/.concentration/')
     i = 1
     g = Gnuplot.Gnuplot()
     g('set view map')

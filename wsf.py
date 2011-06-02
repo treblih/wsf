@@ -180,7 +180,9 @@ class win_main(object):
             gtk.gdk.threads_leave()
         # return 0 (normal exit) or -9 (SIGKILL)
         # otherwise it'll be defunct
-        p.wait()
+        print 'before wait'
+        #p.wait()
+        print 'after wait'
         if base_dir:
             f_log.close()
             widget.set_label('Run ' + which[NAME])
@@ -404,7 +406,7 @@ class win_main(object):
 conf_str = \
 '''[global]
 autorun=True
-cores_use=1
+cores_use=2
 
 [path]
 wrf='''   + cmd[WRF][BASE_DIR]   + '''
